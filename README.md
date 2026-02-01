@@ -1,0 +1,164 @@
+# 🎙️ MetoCast Web
+
+Site oficial do **MetoCast** - Podcast dos estudantes da Universidade Metodista.
+
+## 📋 Sobre o Projeto
+
+O MetoCast Web é a plataforma web do podcast MetoCast, desenvolvida para divulgar episódios, conectar com a comunidade e gerenciar conteúdo através de um painel administrativo.
+
+### ✨ Funcionalidades
+
+**Página Pública:**
+- 🏠 Landing page com apresentação do podcast
+- 🎧 Listagem de episódios com thumbnails do Spotify
+- 🔗 Links para Spotify, YouTube e Instagram
+- 👥 Seção sobre a equipe
+- 📱 Design responsivo (mobile-first)
+
+**Painel Administrativo:**
+- 🔐 Autenticação JWT
+- 📝 CRUD de episódios (criar, editar, excluir, publicar)
+- 🔗 Gerenciamento de links oficiais
+- 🖼️ Suporte a imagens de capa dos episódios
+
+## 🛠️ Tecnologias
+
+- **Frontend:** React 18 + Vite
+- **Estilização:** Tailwind CSS v4 + Inline Styles
+- **Roteamento:** React Router DOM v6
+- **HTTP Client:** Axios
+- **Ícones:** Lucide React
+- **Notificações:** React Hot Toast
+- **Backend:** FastAPI + PostgreSQL (container Docker separado)
+
+## 🚀 Instalação
+
+### Pré-requisitos
+
+- Node.js 18+
+- npm ou yarn
+- Docker (para o backend)
+
+### Configuração
+
+1. **Clone o repositório:**
+```bash
+git clone https://github.com/seu-usuario/MetoCast-Web.git
+cd MetoCast-Web
+```
+
+2. **Instale as dependências:**
+```bash
+npm install
+```
+
+3. **Inicie o servidor de desenvolvimento:**
+```bash
+npm run dev
+```
+
+4. **Acesse:** http://localhost:5173
+
+### Backend
+
+O frontend se conecta ao backend MetoCast que roda em Docker:
+
+```bash
+cd ../MetoCast
+docker compose up -d
+```
+
+API disponível em: http://localhost:8000
+
+## 📁 Estrutura do Projeto
+
+```
+MetoCast-Web/
+├── public/
+│   └── images/
+│       └── logo-metocast.png    # Logo do podcast
+├── src/
+│   ├── components/
+│   │   ├── About.jsx            # Seção "Sobre"
+│   │   ├── EpisodeCard.jsx      # Card de episódio
+│   │   ├── EpisodeGrid.jsx      # Grid de episódios
+│   │   ├── Footer.jsx           # Rodapé
+│   │   ├── Hero.jsx             # Seção principal
+│   │   ├── Navbar.jsx           # Barra de navegação
+│   │   └── Team.jsx             # Seção da equipe
+│   ├── context/
+│   │   └── AuthContext.jsx      # Contexto de autenticação
+│   ├── pages/
+│   │   ├── Home.jsx             # Página inicial
+│   │   ├── Login.jsx            # Página de login
+│   │   └── AdminPanel.jsx       # Painel administrativo
+│   ├── services/
+│   │   ├── api.js               # Cliente HTTP
+│   │   └── auth.js              # Serviços de autenticação
+│   ├── App.jsx                  # Componente principal
+│   ├── main.jsx                 # Ponto de entrada
+│   └── index.css                # Estilos globais
+├── index.html
+├── package.json
+├── vite.config.js
+├── tailwind.config.js
+└── postcss.config.js
+```
+
+## 🔐 Acesso ao Painel Admin
+
+- **URL:** http://localhost:5173/login
+- **Email:** admin@metocast.com
+- **Senha:** admin123
+
+> ⚠️ Altere a senha em produção!
+
+## 🎨 Paleta de Cores
+
+| Cor | Hex | Uso |
+|-----|-----|-----|
+| Amarelo | #FFC107 | Cor primária, destaques |
+| Azul | #1E88E5 | Cor secundária, links |
+| Azul Escuro | #1B4B8A | Backgrounds, logo |
+| Roxo | #6C5CE7 | Acentos |
+| Escuro | #0D0D0F | Background principal |
+| Superfície | #1A1A1F | Cards, seções |
+
+## 📱 Integração com App Mobile
+
+O site compartilha o mesmo backend com o app mobile Flutter (MetoCast-App), garantindo sincronização de dados.
+
+## 📡 API Endpoints
+
+### Públicos
+- GET /api/episodes - Lista episódios publicados
+- GET /api/links - Lista links oficiais
+
+### Autenticados (Admin)
+- POST /api/auth/login - Login
+- GET /api/admin/episodes - Lista todos episódios
+- POST /api/admin/episodes - Criar episódio
+- PUT /api/admin/episodes/:id - Atualizar episódio
+- DELETE /api/admin/episodes/:id - Excluir episódio
+
+## 🚀 Deploy
+
+### Build de Produção
+
+```bash
+npm run build
+```
+
+## 📞 Links Oficiais
+
+- 🎧 [Spotify](https://open.spotify.com/show/1QpRW5ISZzqqJyd3orYxsy)
+- 📺 [YouTube](https://www.youtube.com/@MetoCast)
+- 📸 [Instagram](https://www.instagram.com/meto_cast/)
+
+## 📄 Licença
+
+Este projeto é de uso interno da Universidade Metodista.
+
+---
+
+Feito com ❤️ pela equipe MetoCast
