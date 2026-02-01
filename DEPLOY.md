@@ -314,12 +314,14 @@ ALLOWED_ORIGINS=https://lysk-dot.github.io,https://metocast.org,https://www.meto
 4. **5e1c21b** - fix: corrigir caminhos das imagens para GitHub Pages
 5. **7b5cfad** - fix: corrigir múltiplos problemas de tela preta no login
 6. **67147ee** - fix: resolver tela preta no login adicionando estado de loading
+7. **8e5dd78** - fix: corrigir tela preta no login na segunda navegação
+8. **e99d216** - fix: usar navigate() no useEffect ao invés de Navigate component
 
 ---
 
 ## 🔧 Correção de Bugs Recentes
 
-### Problema: Tela Preta no Login (1 de Fev, 2026)
+### Problema 1: Tela Preta no Login (1 de Fev, 2026)
 
 **Sintoma**: Ao acessar a página de login, a tela ficava completamente preta, sem nenhum conteúdo visível.
 
@@ -421,6 +423,138 @@ return isAuthenticated ? children : <Navigate />;
    [AuthProvider] Render - loading: false, isAuth: false
    ```
 4. A tela de login deve aparecer com background escuro
+
+**Status**: ✅ Resolvido
+
+---
+
+### Problema 2: Tela Preta na Segunda Navegação para Login (1 de Fev, 2026)
+
+**Sintoma**: Após fazer login com sucesso, ao voltar para a página principal e tentar acessar `/login` novamente, a tela ficava preta na segunda vez.
+
+**Causa Raiz**:
+O `AuthProvider` estava bloqueando **toda a aplicação** durante o estado de `loading`, incluindo páginas públicas como o Login. Isso causava:
+- Na primeira visita: funcionava porque o loading era rápido
+- Na segunda visita: o `AuthContext` executava `checkAuth()` novamente, colocando `loading=true`
+- Durante esse loading, **nada** era renderizado, nem mesmo a tela de login
+- Resultado: tela preta até o loading terminar
+
+**Problema de Arquitetura**:
+```javascript
+// ❌ ERRADO - AuthProvider bloqueando tudo
+if (loading) {
+  return <LoadingScreen />; // Bloqueia Home, Login, tudo!
+}
+return <AuthContext.Provider>{children}</AuthContext.Provider>;
+```
+
+**Soluções Implementadas**:
+
+#### 1. AuthProvider não bloqueia mais a aplicação ([AuthContext.jsx](src/context/AuthContext.jsx))
+```javascript
+// ✅ CORRETO - Não bloqueia, apenas fornece o estado
+const value = { user, isAuthenticated, loading, login, logout };
+
+return (
+  <AuthContext.Provider value={value}>
+    {children} {/* Sempre renderiza os children */}
+  </AuthContext.Provider>
+);
+```
+
+**Benefício**: Cada rota decide individualmente como lidar com o estado de loading.
+
+#### 2. Login trata loading individualmente ([Login.jsx](src/pages/Login.jsx))
+```javascript
+const { login, isAuthenticated, loading: authLoading } = useAuth();
+
+// Mostra loading apenas na página de login
+if (authLoading) {
+  return <LoadingScreen message="Verificando autenticação..." />;
+}
+
+// Redireciona se já estiver logado
+useEffect(() => {
+  if (!authLoading && isAuthenticated) {
+    navigate('/admin', { replace: true });
+  }
+}, [authLoading, isAuthenticated, navigate]);
+```
+
+**Benefício**: Loading só aparece onde é necessário, não bloqueia navegação.
+
+#### 3. ProtectedRoute trata loading ([App.jsx](src/App.jsx))
+```javascript
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return <LoadingScreen message="Verificando acesso..." />;
+  }
+  
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+```
+
+**Benefício**: Rotas protegidas aguardam verificação antes de decidir redirecionar.
+
+**Arquivos Modificados**:
+- `src/context/AuthContext.jsx` - Removido bloqueio global
+- `src/pages/Login.jsx` - Adicionado tratamento individual de loading
+- `src/App.jsx` - ProtectedRoute aguarda verificação
+
+**Status**: ✅ Resolvido
+
+---
+
+### Problema 3: Warning do React Router (1 de Fev, 2026)
+
+**Sintoma**: Console do navegador mostrando warning:
+```
+Warning: You should call navigate() in a React.useEffect(), not when your component is first rendered.
+```
+
+**Causa Raiz**:
+Usar `<Navigate>` component durante a renderização inicial causa efeitos colaterais (side effects) no render, o que é contra as práticas do React.
+
+```javascript
+// ❌ ERRADO - Navegação durante renderização
+const Login = () => {
+  if (isAuthenticated) {
+    return <Navigate to="/admin" replace />; // Side effect no render!
+  }
+  return <LoginForm />;
+};
+```
+
+**Solução Implementada**:
+
+#### Mover navegação para useEffect ([Login.jsx](src/pages/Login.jsx))
+```javascript
+// ✅ CORRETO - Navegação em useEffect
+const Login = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate('/admin', { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+  
+  if (authLoading) return <LoadingScreen />;
+  
+  return <LoginForm />;
+};
+```
+
+**Por que funciona**:
+- `useEffect` é o lugar correto para side effects como navegação
+- A navegação só acontece **após** o render estar completo
+- Dependencies garantem que a navegação seja refeita quando necessário
+
+**Arquivos Modificados**:
+- `src/pages/Login.jsx` - Substituído `<Navigate>` por `navigate()` em `useEffect`
 
 **Status**: ✅ Resolvido
 
