@@ -76,7 +76,7 @@ const Hero = () => {
             backgroundColor: '#1B4B8A'
           }}>
             <img 
-              src="/images/logo-metocast.png" 
+              src={import.meta.env.BASE_URL + 'images/logo-metocast.png'}
               alt="MetoCast Logo"
               style={{
                 width: '100%',
@@ -84,7 +84,7 @@ const Hero = () => {
                 objectFit: 'cover'
               }}
               onError={(e) => {
-                e.target.src = '/images/logo-metocast.svg';
+                e.target.src = import.meta.env.BASE_URL + 'images/logo-metocast.svg';
               }}
             />
           </div>
