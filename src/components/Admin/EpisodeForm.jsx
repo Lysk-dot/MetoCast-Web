@@ -9,11 +9,11 @@ const EpisodeForm = ({ episode, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    thumbnail_url: '',
+    cover_image_url: '',
     spotify_url: '',
     youtube_url: '',
     tags: '',
-    status: 'draft',
+    status: 'DRAFT',
   });
   
   const [loading, setLoading] = useState(false);
@@ -24,11 +24,11 @@ const EpisodeForm = ({ episode, onClose, onSave }) => {
       setFormData({
         title: episode.title || '',
         description: episode.description || '',
-        thumbnail_url: episode.thumbnail_url || '',
+        cover_image_url: episode.cover_image_url || '',
         spotify_url: episode.spotify_url || '',
         youtube_url: episode.youtube_url || '',
-        tags: Array.isArray(episode.tags) ? episode.tags.join(', ') : '',
-        status: episode.status || 'draft',
+        tags: episode.tags || '',
+        status: episode.status || 'DRAFT',
       });
     }
   }, [episode]);
@@ -37,7 +37,6 @@ const EpisodeForm = ({ episode, onClose, onSave }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     
-    // Limpar erro do campo
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: null }));
     }
@@ -66,12 +65,15 @@ const EpisodeForm = ({ episode, onClose, onSave }) => {
     try {
       setLoading(true);
       
+      // Preparar dados para a API
       const data = {
-        ...formData,
-        tags: formData.tags
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter((tag) => tag),
+        title: formData.title,
+        description: formData.description,
+        cover_image_url: formData.cover_image_url || null,
+        spotify_url: formData.spotify_url || null,
+        youtube_url: formData.youtube_url || null,
+        tags: formData.tags || null,
+        status: formData.status,
       };
       
       if (isEditing) {
@@ -85,7 +87,7 @@ const EpisodeForm = ({ episode, onClose, onSave }) => {
       onSave();
     } catch (error) {
       console.error('Erro ao salvar:', error);
-      toast.error(isEditing ? 'Erro ao atualizar' : 'Erro ao criar episódio');
+      toast.error(isEditing ? 'Erro ao atualizar episódio' : 'Erro ao salvar episódio');
     } finally {
       setLoading(false);
     }
@@ -145,16 +147,16 @@ const EpisodeForm = ({ episode, onClose, onSave }) => {
             )}
           </div>
 
-          {/* Thumbnail URL */}
+          {/* Cover Image URL */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               <Image className="w-4 h-4 inline mr-2" />
-              URL da Imagem (opcional)
+              URL da Imagem de Capa (opcional)
             </label>
             <input
               type="url"
-              name="thumbnail_url"
-              value={formData.thumbnail_url}
+              name="cover_image_url"
+              value={formData.cover_image_url}
               onChange={handleChange}
               placeholder="https://exemplo.com/imagem.jpg"
               className="input-field"
@@ -218,20 +220,20 @@ const EpisodeForm = ({ episode, onClose, onSave }) => {
               onChange={handleChange}
               className="input-field"
             >
-              <option value="draft">Rascunho</option>
-              <option value="published">Publicado</option>
+              <option value="DRAFT">Rascunho</option>
+              <option value="PUBLISHED">Publicado</option>
             </select>
           </div>
 
           {/* Preview */}
-          {formData.thumbnail_url && (
+          {formData.cover_image_url && (
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Preview da Imagem
               </label>
               <div className="aspect-video rounded-xl overflow-hidden bg-surface">
                 <img
-                  src={formData.thumbnail_url}
+                  src={formData.cover_image_url}
                   alt="Preview"
                   className="w-full h-full object-cover"
                   onError={(e) => {
