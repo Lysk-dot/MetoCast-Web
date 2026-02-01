@@ -14,16 +14,22 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   console.log('[Login] authLoading:', authLoading, 'isAuthenticated:', isAuthenticated);
 
-  // Redirecionar se já estiver logado - usando useEffect para evitar warning
+  // Marcar como montado após primeira renderização
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    setMounted(true);
+  }, []);
+
+  // Redirecionar se já estiver logado - após componente estar montado
+  useEffect(() => {
+    if (mounted && !authLoading && isAuthenticated) {
       console.log('[Login] Usuário já autenticado, redirecionando para /admin');
       navigate('/admin', { replace: true });
     }
-  }, [authLoading, isAuthenticated, navigate]);
+  }, [mounted, authLoading, isAuthenticated, navigate]);
 
   // Se ainda está verificando autenticação, mostrar loading
   if (authLoading) {

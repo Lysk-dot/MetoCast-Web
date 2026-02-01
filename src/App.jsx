@@ -4,23 +4,29 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import AdminPanel from './pages/AdminPanel';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
+  const [mounted, setMounted] = useState(false);
   
   console.log('[ProtectedRoute] loading:', loading, 'isAuth:', isAuthenticated);
   
-  // Redirecionar para login se não autenticado (após loading)
+  // Marcar como montado
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    setMounted(true);
+  }, []);
+  
+  // Redirecionar para login se não autenticado (após loading e montagem)
+  useEffect(() => {
+    if (mounted && !loading && !isAuthenticated) {
       console.log('[ProtectedRoute] Não autenticado, redirecionando para /login');
       navigate('/login', { replace: true });
     }
-  }, [loading, isAuthenticated, navigate]);
+  }, [mounted, loading, isAuthenticated, navigate]);
   
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
@@ -45,10 +51,17 @@ const ProtectedRoute = ({ children }) => {
 // Componente para redirecionar 404
 const NotFoundRedirect = () => {
   const navigate = useNavigate();
+  const [mounted, setMounted] = useState(false);
   
   useEffect(() => {
-    navigate('/', { replace: true });
-  }, [navigate]);
+    setMounted(true);
+  }, []);
+  
+  useEffect(() => {
+    if (mounted) {
+      navigate('/', { replace: true });
+    }
+  }, [mounted, navigate]);
   
   return null;
 };
