@@ -312,6 +312,117 @@ ALLOWED_ORIGINS=https://lysk-dot.github.io,https://metocast.org,https://www.meto
 2. **91786fc** - fix: ajustar base path para GitHub Pages
 3. **8dd531e** - docs: adicionar documentação completa de deploy
 4. **5e1c21b** - fix: corrigir caminhos das imagens para GitHub Pages
+5. **7b5cfad** - fix: corrigir múltiplos problemas de tela preta no login
+6. **67147ee** - fix: resolver tela preta no login adicionando estado de loading
+
+---
+
+## 🔧 Correção de Bugs Recentes
+
+### Problema: Tela Preta no Login (1 de Fev, 2026)
+
+**Sintoma**: Ao acessar a página de login, a tela ficava completamente preta, sem nenhum conteúdo visível.
+
+**Causa Raiz**: 
+O componente `Login` tentava renderizar antes do `AuthContext` terminar a verificação inicial de autenticação, causando um estado de "limbo" onde:
+- O `loading` do `AuthContext` estava `true`
+- O componente `Login` não aguardava esse estado
+- O CSS do Tailwind não tinha tempo de carregar/aplicar
+- Não havia fallback visual durante o carregamento
+
+**Soluções Implementadas**:
+
+#### 1. Centralização do Loading no AuthProvider ([AuthContext.jsx](src/context/AuthContext.jsx))
+```javascript
+// Antes: children renderizava mesmo com loading=true
+return (
+  <AuthContext.Provider value={value}>
+    {children}
+  </AuthContext.Provider>
+);
+
+// Depois: loading renderiza tela própria com estilos inline
+if (loading) {
+  return (
+    <AuthContext.Provider value={value}>
+      <div className="min-h-screen flex items-center justify-center" 
+           style={{ backgroundColor: '#0D0D0F' }}>
+        <div className="text-center">
+          <div className="spinner mx-auto mb-4" 
+               style={{ borderColor: '#FFC107', borderTopColor: 'transparent' }}>
+          </div>
+          <p style={{ color: '#B0B0B8' }}>Carregando...</p>
+        </div>
+      </div>
+    </AuthContext.Provider>
+  );  
+}
+```
+
+**Benefício**: Garante que sempre há algo visível na tela durante o carregamento inicial.
+
+#### 2. Logs de Debug Detalhados
+```javascript
+console.log('[AuthProvider] Render - loading:', loading, 'isAuth:', isAuthenticated);
+console.log('[AuthContext] Verificando autenticação...');
+console.log('[AuthContext] Verificação concluída, setando loading=false');
+```
+
+**Benefício**: Facilita identificar onde o carregamento trava no futuro.
+
+#### 3. Tratamento de Erros Robusto
+```javascript
+try {
+  // verificação de autenticação
+} catch (error) {
+  console.error('[AuthContext] Erro ao verificar autenticação:', error);
+} finally {
+  setLoading(false); // SEMPRE seta loading=false, mesmo com erro
+}
+```
+
+**Benefício**: Evita que erros na API travem a aplicação indefinidamente.
+
+#### 4. Estilos Inline como Fallback ([Login.jsx](src/pages/Login.jsx))
+```javascript
+// Adicionado style inline além das classes Tailwind
+<div className="min-h-screen bg-surface-dark ..." 
+     style={{ backgroundColor: '#0D0D0F', minHeight: '100vh' }}>
+```
+
+**Benefício**: Garante background escuro mesmo se o Tailwind falhar ao carregar.
+
+#### 5. Simplificação do ProtectedRoute ([App.jsx](src/App.jsx))
+```javascript
+// Antes: loading duplicado em App.jsx e AuthContext
+if (loading) return <LoadingScreen />;
+return isAuthenticated ? children : <Navigate />;
+
+// Depois: loading apenas no AuthContext
+return isAuthenticated ? children : <Navigate />;
+```
+
+**Benefício**: Remove lógica duplicada e conflitante.
+
+**Arquivos Modificados**:
+- `src/context/AuthContext.jsx` - Loading centralizado + logs + try-catch
+- `src/pages/Login.jsx` - Removido loading duplicado + estilos inline
+- `src/App.jsx` - Simplificado ProtectedRoute
+
+**Como Testar**:
+1. Abra o DevTools (F12) → Console
+2. Acesse `http://localhost:5173/MetoCast-Web/login`
+3. Verifique os logs:
+   ```
+   [AuthProvider] Render - loading: true, isAuth: false
+   [AuthContext] Verificando autenticação...
+   [AuthContext] Nenhum token encontrado
+   [AuthContext] Verificação concluída, setando loading=false
+   [AuthProvider] Render - loading: false, isAuth: false
+   ```
+4. A tela de login deve aparecer com background escuro
+
+**Status**: ✅ Resolvido
 
 ---
 
@@ -351,4 +462,4 @@ ALLOWED_ORIGINS=https://lysk-dot.github.io
 
 ---
 
-**Última atualização**: 31 de Janeiro de 2026
+**Última atualização**: 1 de Fevereiro de 2026
