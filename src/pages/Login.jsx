@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Navigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Headphones, Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -17,6 +17,14 @@ const Login = () => {
 
   console.log('[Login] authLoading:', authLoading, 'isAuthenticated:', isAuthenticated);
 
+  // Redirecionar se já estiver logado - usando useEffect para evitar warning
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      console.log('[Login] Usuário já autenticado, redirecionando para /admin');
+      navigate('/admin', { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
   // Se ainda está verificando autenticação, mostrar loading
   if (authLoading) {
     return (
@@ -27,12 +35,6 @@ const Login = () => {
         </div>
       </div>
     );
-  }
-
-  // Redirecionar se já estiver logado
-  if (isAuthenticated) {
-    console.log('[Login] Usuário já autenticado, redirecionando para /admin');
-    return <Navigate to="/admin" replace />;
   }
 
   const handleChange = (e) => {
