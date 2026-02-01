@@ -53,7 +53,7 @@ export const api = {
     apiClient.post('/auth/login', { email, password }),
   
   // Verificar token
-  verifyToken: () => apiClient.get('/auth/verify'),
+  verifyToken: () => apiClient.get('/auth/me'),
   
   // ============ ADMIN - EPISÓDIOS ============
   
