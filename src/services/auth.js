@@ -42,13 +42,15 @@ export const auth = {
     return user ? JSON.parse(user) : null;
   },
   
-  // Verificar token válido
+  // Verificar token válido - não faz logout automaticamente
   verifyToken: async () => {
     try {
-      await api.verifyToken();
+      const response = await api.verifyToken();
+      // Atualiza dados do usuário
+      localStorage.setItem('metocast_user', JSON.stringify(response.data));
       return true;
     } catch (error) {
-      auth.logout();
+      console.error('Token inválido:', error);
       return false;
     }
   },
