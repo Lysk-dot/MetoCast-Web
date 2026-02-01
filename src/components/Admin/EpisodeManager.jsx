@@ -33,39 +33,7 @@ const EpisodeManager = () => {
     } catch (error) {
       console.error('Erro ao buscar episódios:', error);
       toast.error('Erro ao carregar episódios');
-      // Dados de exemplo
-      setEpisodes([
-        {
-          id: 1,
-          title: 'Aquecimento ENEM',
-          description: 'Dicas e motivação para você arrasar no ENEM!',
-          status: 'published',
-          published_at: '2025-10-15',
-          spotify_url: 'https://open.spotify.com/show/1QpRW5ISZzqqJyd3orYxsy',
-          youtube_url: 'https://www.youtube.com/@MetoCast',
-          tags: ['ENEM', 'Educação'],
-        },
-        {
-          id: 2,
-          title: 'Educação Financeira à luz do Conhecimento',
-          description: 'Aprenda a gerenciar seu dinheiro enquanto estuda.',
-          status: 'published',
-          published_at: '2025-09-20',
-          spotify_url: 'https://open.spotify.com/show/1QpRW5ISZzqqJyd3orYxsy',
-          youtube_url: 'https://www.youtube.com/@MetoCast',
-          tags: ['Finanças', 'Educação'],
-        },
-        {
-          id: 3,
-          title: 'Nova Temporada - Preview',
-          description: 'Um spoiler do que vem por aí na nova temporada!',
-          status: 'draft',
-          published_at: null,
-          spotify_url: '',
-          youtube_url: '',
-          tags: ['Preview'],
-        },
-      ]);
+      setEpisodes([]);
     } finally {
       setLoading(false);
     }
@@ -130,6 +98,13 @@ const EpisodeManager = () => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
+  // Converter tags string para array se necessário
+  const getTags = (tags) => {
+    if (!tags) return [];
+    if (typeof tags === 'string') return tags.split(',').map(t => t.trim());
+    return tags;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -154,7 +129,7 @@ const EpisodeManager = () => {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
           type="text"
           placeholder="Buscar episódios..."
@@ -164,116 +139,132 @@ const EpisodeManager = () => {
         />
       </div>
 
-      {/* Table */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-yellow-primary animate-spin" />
-        </div>
-      ) : filteredEpisodes.length === 0 ? (
-        <div className="text-center py-20 card">
-          <Mic className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-400">
-            {searchTerm ? 'Nenhum episódio encontrado' : 'Nenhum episódio cadastrado'}
-          </p>
-        </div>
-      ) : (
-        <div className="card overflow-hidden p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-surface border-b border-surface-hover">
-                <tr>
-                  <th className="text-left text-gray-400 font-medium p-4">Título</th>
-                  <th className="text-left text-gray-400 font-medium p-4">Status</th>
-                  <th className="text-left text-gray-400 font-medium p-4">Data</th>
-                  <th className="text-left text-gray-400 font-medium p-4">Tags</th>
-                  <th className="text-right text-gray-400 font-medium p-4">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-hover">
-                {filteredEpisodes.map((episode) => (
-                  <tr key={episode.id} className="hover:bg-surface-hover/50 transition-colors">
-                    <td className="p-4">
-                      <div>
-                        <p className="font-medium text-white">{episode.title}</p>
-                        <p className="text-sm text-gray-500 truncate max-w-xs">
-                          {episode.description}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      {episode.status === 'published' ? (
-                        <span className="badge badge-green">
-                          <Eye className="w-3 h-3 mr-1" />
-                          Publicado
-                        </span>
-                      ) : (
-                        <span className="badge badge-yellow">
-                          <EyeOff className="w-3 h-3 mr-1" />
-                          Rascunho
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-4 text-gray-400">
-                      {formatDate(episode.published_at || episode.created_at)}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex flex-wrap gap-1">
-                        {(typeof episode.tags === "string" && episode.tags ? episode.tags.split(",") : (episode.tags || [])).slice(0, 2).map((tag, i) => (
-                          <span key={i} className="text-xs px-2 py-0.5 rounded bg-blue-primary/20 text-blue-primary">
-                            {tag}
-                          </span>
-                        ))}
-                        {(episode.tags || []).length > 2 && (
-                          <span className="text-xs text-gray-500">
-                            +{episode.tags.length - 2}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center justify-end gap-2">
-                        {episode.status === 'published' ? (
-                          <button
-                            onClick={() => handleUnpublish(episode.id)}
-                            className="p-2 text-gray-400 hover:text-yellow-primary hover:bg-yellow-primary/10 rounded-lg transition-all"
-                            title="Despublicar"
-                          >
-                            <EyeOff className="w-4 h-4" />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handlePublish(episode.id)}
-                            className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-all"
-                            title="Publicar"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleEdit(episode)}
-                          className="p-2 text-gray-400 hover:text-blue-primary hover:bg-blue-primary/10 rounded-lg transition-all"
-                          title="Editar"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(episode.id)}
-                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                          title="Deletar"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
         </div>
       )}
 
-      {/* Form Modal */}
+      {/* Empty State */}
+      {!loading && episodes.length === 0 && (
+        <div className="text-center py-12">
+          <Mic className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">
+            Nenhum episódio cadastrado
+          </h3>
+          <p className="text-gray-400 mb-6">
+            Comece adicionando seu primeiro episódio!
+          </p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            Criar Primeiro Episódio
+          </button>
+        </div>
+      )}
+
+      {/* Episodes Grid */}
+      {!loading && filteredEpisodes.length > 0 && (
+        <div className="grid gap-4">
+          {filteredEpisodes.map((episode) => (
+            <div
+              key={episode.id}
+              className="bg-surface-card border border-surface-hover rounded-xl p-4 hover:border-primary/50 transition-all"
+            >
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                {/* Thumbnail */}
+                <div className="w-full md:w-32 h-20 bg-surface rounded-lg overflow-hidden flex-shrink-0">
+                  {episode.cover_image_url ? (
+                    <img
+                      src={episode.cover_image_url}
+                      alt={episode.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                      <Mic className="w-8 h-8 text-primary" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold text-white truncate">
+                      {episode.title}
+                    </h3>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
+                        episode.status === 'PUBLISHED'
+                          ? 'bg-green-500/20 text-green-400'
+                          : 'bg-yellow-500/20 text-yellow-400'
+                      }`}
+                    >
+                      {episode.status === 'PUBLISHED' ? 'Publicado' : 'Rascunho'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-400 mt-1 line-clamp-2">
+                    {episode.description}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    {getTags(episode.tags).slice(0, 3).map((tag, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-0.5 text-xs bg-surface rounded-full text-gray-300"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    <span className="text-xs text-gray-500">
+                      {formatDate(episode.created_at)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {episode.status === 'PUBLISHED' ? (
+                    <button
+                      onClick={() => handleUnpublish(episode.id)}
+                      className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-yellow-400/10 rounded-lg transition-all"
+                      title="Despublicar"
+                    >
+                      <EyeOff className="w-5 h-5" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handlePublish(episode.id)}
+                      className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-all"
+                      title="Publicar"
+                    >
+                      <Eye className="w-5 h-5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleEdit(episode)}
+                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                    title="Editar"
+                  >
+                    <Edit className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(episode.id)}
+                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
+                    title="Deletar"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Episode Form Modal */}
       {showForm && (
         <EpisodeForm
           episode={editingEpisode}
