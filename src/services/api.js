@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8000/api';
+// Usa Railway em produção, localhost em desenvolvimento
+const API_BASE = import.meta.env.PROD 
+  ? 'https://metocast-production.up.railway.app/api'
+  : 'http://localhost:8000/api';
 
 // Criar instância do axios com configurações base
 const apiClient = axios.create({
