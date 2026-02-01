@@ -218,7 +218,7 @@ const EpisodeManager = () => {
 
   const fetchEpisodes = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/admin/episodes', {
+      const response = await fetch('https://metocast-production.up.railway.app/api/admin/episodes', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('metocast_token')}`,
         },
@@ -242,7 +242,7 @@ const EpisodeManager = () => {
     if (!confirm('Tem certeza que deseja excluir este episódio?')) return;
     
     try {
-      const response = await fetch(`http://localhost:8000/api/admin/episodes/${id}`, {
+      const response = await fetch(`https://metocast-production.up.railway.app/api/admin/episodes/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('metocast_token')}`,
@@ -260,8 +260,8 @@ const EpisodeManager = () => {
   const handleSave = async (episodeData) => {
     try {
       const url = editingEpisode 
-        ? `http://localhost:8000/api/admin/episodes/${editingEpisode.id}`
-        : 'http://localhost:8000/api/admin/episodes';
+        ? `https://metocast-production.up.railway.app/api/admin/episodes/${editingEpisode.id}`
+        : 'https://metocast-production.up.railway.app/api/admin/episodes';
       
       const response = await fetch(url, {
         method: editingEpisode ? 'PUT' : 'POST',
@@ -691,7 +691,7 @@ const LinkManager = () => {
 
   const fetchLinks = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/admin/links', {
+      const response = await fetch('https://metocast-production.up.railway.app/api/admin/links', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('metocast_token')}`,
         },
@@ -715,7 +715,7 @@ const LinkManager = () => {
     if (!confirm('Tem certeza que deseja excluir este link?')) return;
     
     try {
-      const response = await fetch(`http://localhost:8000/api/admin/links/${id}`, {
+      const response = await fetch(`https://metocast-production.up.railway.app/api/admin/links/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('metocast_token')}`,
@@ -733,8 +733,8 @@ const LinkManager = () => {
   const handleSave = async (linkData) => {
     try {
       const url = editingLink 
-        ? `http://localhost:8000/api/admin/links/${editingLink.id}`
-        : 'http://localhost:8000/api/admin/links';
+        ? `https://metocast-production.up.railway.app/api/admin/links/${editingLink.id}`
+        : 'https://metocast-production.up.railway.app/api/admin/links';
       
       const response = await fetch(url, {
         method: editingLink ? 'PUT' : 'POST',
