@@ -4,5 +4,5 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/', // Mude para '/nome-repo/' se não usar domínio customizado
+  base: '/MetoCast-Web/', // Subpath do GitHub Pages
 })
