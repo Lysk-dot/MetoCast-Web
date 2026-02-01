@@ -11,8 +11,18 @@ const ProtectedRoute = ({ children }) => {
   
   console.log('[ProtectedRoute] loading:', loading, 'isAuth:', isAuthenticated);
   
-  // O loading agora é tratado no AuthProvider
-  // Aqui só verificamos autenticação
+  // Mostrar loading enquanto verifica autenticação
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0D0D0F' }}>
+        <div className="text-center">
+          <div className="spinner mx-auto mb-4" style={{ borderColor: '#FFC107', borderTopColor: 'transparent', width: '40px', height: '40px' }}></div>
+          <p style={{ color: '#B0B0B8' }}>Verificando acesso...</p>
+        </div>
+      </div>
+    );
+  }
+  
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 

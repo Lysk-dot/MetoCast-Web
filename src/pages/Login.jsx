@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, loading: authLoading } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -15,8 +15,23 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  console.log('[Login] authLoading:', authLoading, 'isAuthenticated:', isAuthenticated);
+
+  // Se ainda está verificando autenticação, mostrar loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0D0D0F' }}>
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-yellow-primary animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Redirecionar se já estiver logado
   if (isAuthenticated) {
+    console.log('[Login] Usuário já autenticado, redirecionando para /admin');
     return <Navigate to="/admin" replace />;
   }
 

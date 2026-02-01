@@ -60,20 +60,8 @@ export const AuthProvider = ({ children }) => {
     logout,
   };
 
-  // Se estiver carregando, não renderiza nada ainda para evitar flash
-  if (loading) {
-    return (
-      <AuthContext.Provider value={value}>
-        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0D0D0F' }}>
-          <div className="text-center">
-            <div className="spinner mx-auto mb-4" style={{ borderColor: '#FFC107', borderTopColor: 'transparent' }}></div>
-            <p style={{ color: '#B0B0B8' }}>Carregando...</p>
-          </div>
-        </div>
-      </AuthContext.Provider>
-    );  
-  }
-
+  // Não bloquear a renderização da aplicação durante o loading
+  // Deixar cada componente decidir o que fazer com o estado de loading
   return (
     <AuthContext.Provider value={value}>
       {children}
