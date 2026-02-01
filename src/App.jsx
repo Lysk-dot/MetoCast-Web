@@ -1,15 +1,26 @@
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import AdminPanel from './pages/AdminPanel';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  const navigate = useNavigate();
   
   console.log('[ProtectedRoute] loading:', loading, 'isAuth:', isAuthenticated);
+  
+  // Redirecionar para login se não autenticado (após loading)
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      console.log('[ProtectedRoute] Não autenticado, redirecionando para /login');
+      navigate('/login', { replace: true });
+    }
+  }, [loading, isAuthenticated, navigate]);
   
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
@@ -23,7 +34,23 @@ const ProtectedRoute = ({ children }) => {
     );
   }
   
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  // Se não está autenticado, não renderiza nada (o useEffect já está redirecionando)
+  if (!isAuthenticated) {
+    return null;
+  }
+  
+  return children;
+};
+
+// Componente para redirecionar 404
+const NotFoundRedirect = () => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    navigate('/', { replace: true });
+  }, [navigate]);
+  
+  return null;
 };
 
 function App() {
@@ -42,7 +69,7 @@ function App() {
             }
           />
           {/* Redirecionar rotas não encontradas */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundRedirect />} />
         </Routes>
       </HashRouter>
       
