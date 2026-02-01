@@ -162,10 +162,10 @@ jobs:
 
 | Serviço | URL | Descrição |
 |---------|-----|-----------|
-| **Frontend** | https://lysk-dot.github.io/MetoCast-Web/ | Site público |
-| **Backend API** | https://metocast-production.up.railway.app/api | API REST |
-| **API Docs** | https://metocast-production.up.railway.app/docs | Swagger UI |
-| **Redoc** | https://metocast-production.up.railway.app/redoc | Documentação alternativa |
+| **Frontend** | [https://lysk-dot.github.io/MetoCast-Web/](https://lysk-dot.github.io/MetoCast-Web/) | Site público |
+| **Backend API** | [https://metocast-production.up.railway.app/api](https://metocast-production.up.railway.app/api) | API REST |
+| **API Docs** | [https://metocast-production.up.railway.app/docs](https://metocast-production.up.railway.app/docs) | Swagger UI |
+| **Redoc** | [https://metocast-production.up.railway.app/redoc](https://metocast-production.up.railway.app/redoc) | Documentação alternativa |
 
 ### Desenvolvimento
 
@@ -176,16 +176,19 @@ jobs:
 
 ### Railway Dashboard
 
-- **Projeto**: https://railway.app/project/6b5d0bf0-4bfc-49df-a1cb-9daf1de305a5
+- **URL do Projeto**: [https://railway.app/project/6b5d0bf0-4bfc-49df-a1cb-9daf1de305a5](https://railway.app/project/6b5d0bf0-4bfc-49df-a1cb-9daf1de305a5)
+- **Nome do Projeto**: creative-light
+- **Ambiente**: production
 - **Serviços**:
-  - MetoCast (API)
-  - Postgres (Database)
+  - **MetoCast** (Backend API) - [https://metocast-production.up.railway.app](https://metocast-production.up.railway.app)
+  - **Postgres** (Database) - postgres.railway.internal:5432
 
 ### GitHub
 
-- **Frontend Repo**: https://github.com/Lysk-dot/MetoCast-Web
-- **Actions (Deploy)**: https://github.com/Lysk-dot/MetoCast-Web/actions
-- **Pages Settings**: https://github.com/Lysk-dot/MetoCast-Web/settings/pages
+- **Frontend Repo**: [https://github.com/Lysk-dot/MetoCast-Web](https://github.com/Lysk-dot/MetoCast-Web)
+- **Backend Repo**: [https://github.com/Lysk-dot/MetoCast](https://github.com/Lysk-dot/MetoCast)
+- **Actions (Deploy)**: [https://github.com/Lysk-dot/MetoCast-Web/actions](https://github.com/Lysk-dot/MetoCast-Web/actions)
+- **Pages Settings**: [https://github.com/Lysk-dot/MetoCast-Web/settings/pages](https://github.com/Lysk-dot/MetoCast-Web/settings/pages)
 
 ---
 
@@ -238,24 +241,28 @@ Para rodar manualmente no Railway:
 ### Como configurar domínio customizado
 
 #### No GitHub Pages:
-1. Settings → Pages → Custom domain
+1. Acesse: [Settings → Pages → Custom domain](https://github.com/Lysk-dot/MetoCast-Web/settings/pages)
 2. Adicione seu domínio (ex: `metocast.org`)
-3. Configure DNS:
+3. Configure DNS no seu provedor:
    ```
    Type: CNAME
-   Name: www
+   Name: www (ou @)
    Value: lysk-dot.github.io
+   ```
+4. **Importante**: Após configurar o domínio customizado, atualize o `base` no `vite.config.js`:
+   ```javascript
+   base: '/', // Mude de '/MetoCast-Web/' para '/'
    ```
 
 #### No Railway:
-1. MetoCast → Settings → Networking
+1. Acesse: [MetoCast → Settings → Networking](https://railway.app/project/6b5d0bf0-4bfc-49df-a1cb-9daf1de305a5)
 2. Custom Domain → Add domain
-3. Configure DNS conforme instruções
+3. Configure DNS conforme instruções do Railway
 
 #### Atualizar CORS:
+No Railway, adicione o novo domínio em `ALLOWED_ORIGINS`:
 ```bash
-# No Railway, adicione o novo domínio em ALLOWED_ORIGINS:
-ALLOWED_ORIGINS=https://lysk-dot.github.io,https://metocast.org
+ALLOWED_ORIGINS=https://lysk-dot.github.io,https://metocast.org,https://www.metocast.org
 ```
 
 ---
@@ -303,6 +310,34 @@ ALLOWED_ORIGINS=https://lysk-dot.github.io,https://metocast.org
 
 1. **876377c** - feat: configurar deploy GitHub Pages + API Railway
 2. **91786fc** - fix: ajustar base path para GitHub Pages
+3. **8dd531e** - docs: adicionar documentação completa de deploy
+4. **5e1c21b** - fix: corrigir caminhos das imagens para GitHub Pages
+
+---
+
+## ⚙️ Configurações Técnicas
+
+### Vite Base Path
+- **Desenvolvimento**: `/` (localhost)
+- **Produção (subpath)**: `/MetoCast-Web/`
+- **Produção (domínio próprio)**: `/`
+
+### Variáveis de Ambiente (Railway)
+
+```env
+DATABASE_URL=postgresql://postgres:***@postgres.railway.internal:5432/railway
+SECRET_KEY=metocast-super-secret-key-2026
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+DEBUG=False
+ALLOWED_ORIGINS=https://lysk-dot.github.io
+```
+
+### Portas
+- **Frontend Local**: 5173
+- **Backend Local**: 8000
+- **Backend Railway**: Porta dinâmica ($PORT)
+- **PostgreSQL**: 5432
 
 ---
 

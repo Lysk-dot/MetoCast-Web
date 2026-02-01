@@ -144,7 +144,7 @@ const AdminPanel = () => {
         <Link to="/" style={styles.logo}>
           <div style={styles.logoIcon}>
             <img 
-              src="/images/logo-metocast.png" 
+              src={import.meta.env.BASE_URL + 'images/logo-metocast.png'} 
               alt="MetoCast"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
