@@ -28,7 +28,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('metocast_token');
-      window.location.href = '/MetoCast-Web/login';
+      window.location.hash = '#/login';
     }
     return Promise.reject(error);
   }
