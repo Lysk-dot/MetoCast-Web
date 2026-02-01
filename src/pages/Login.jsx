@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -14,18 +14,6 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Mostrar loading enquanto verifica autenticação
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-surface-dark flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-yellow-primary animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Carregando...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Redirecionar se já estiver logado
   if (isAuthenticated) {
@@ -63,7 +51,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-surface-dark relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-surface-dark relative overflow-hidden" style={{ backgroundColor: '#0D0D0F', minHeight: '100vh' }}>
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-yellow-primary/10 via-transparent to-blue-primary/10" />
       

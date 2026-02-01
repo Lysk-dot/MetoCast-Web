@@ -9,14 +9,10 @@ import AdminPanel from './pages/AdminPanel';
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-surface-dark flex items-center justify-center">
-        <div className="spinner" />
-      </div>
-    );
-  }
+  console.log('[ProtectedRoute] loading:', loading, 'isAuth:', isAuthenticated);
   
+  // O loading agora é tratado no AuthProvider
+  // Aqui só verificamos autenticação
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
