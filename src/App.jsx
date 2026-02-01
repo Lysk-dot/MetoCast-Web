@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/MetoCast-Web">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
