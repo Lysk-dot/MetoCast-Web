@@ -9,10 +9,13 @@ const EpisodeCard = ({ episode }) => {
     published_at,
     spotify_url,
     youtube_url,
-    tags = [],
+    tags: tagsRaw = "",
   } = episode;
 
   // Imagem final a ser usada (cover_image_url do backend ou fallback para logo)
+  // Converter tags de string para array
+  const tags = typeof tagsRaw === "string" && tagsRaw ? tagsRaw.split(",").map(t => t.trim()) : (Array.isArray(tagsRaw) ? tagsRaw : []);
+
   const imageUrl = cover_image_url || thumbnail_url;
 
   // Formatar data

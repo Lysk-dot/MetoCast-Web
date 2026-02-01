@@ -218,7 +218,7 @@ const EpisodeManager = () => {
                     </td>
                     <td className="p-4">
                       <div className="flex flex-wrap gap-1">
-                        {(episode.tags || []).slice(0, 2).map((tag, i) => (
+                        {(typeof episode.tags === "string" && episode.tags ? episode.tags.split(",") : (episode.tags || [])).slice(0, 2).map((tag, i) => (
                           <span key={i} className="text-xs px-2 py-0.5 rounded bg-blue-primary/20 text-blue-primary">
                             {tag}
                           </span>
