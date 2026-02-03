@@ -2,7 +2,7 @@ import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import EpisodeGrid from '../components/EpisodeGrid';
 import About from '../components/About';
-import Team from '../components/Team';
+// import Team from '../components/Team'; // TODO: Descomentar quando tiver os membros da equipe
 import Footer from '../components/Footer';
 
 const Home = () => {
@@ -13,7 +13,7 @@ const Home = () => {
         <Hero />
         <EpisodeGrid />
         <About />
-        <Team />
+        {/* <Team /> */}{/* TODO: Descomentar quando tiver os membros da equipe */}
       </main>
       <Footer />
     </div>

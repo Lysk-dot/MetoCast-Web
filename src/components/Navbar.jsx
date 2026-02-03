@@ -17,7 +17,7 @@ const Navbar = () => {
     { name: 'Início', href: '/' },
     { name: 'Episódios', href: '/#episodes' },
     { name: 'Sobre', href: '/#about' },
-    { name: 'Equipe', href: '/#team' },
+    // { name: 'Equipe', href: '/#team' }, // TODO: Descomentar quando tiver os membros da equipe
   ];
 
   const scrollToSection = (href) => {
