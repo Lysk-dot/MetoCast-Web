@@ -15,18 +15,22 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Início', href: '/', isRoute: true },
-    { name: 'Episódios', href: '/#episodes', isRoute: false },
-    { name: 'Sobre', href: '/#about', isRoute: false },
-    // { name: 'Equipe', href: '/#team' }, // TODO: Descomentar quando tiver os membros da equipe
+    { name: 'Episódios', href: '#episodes', isRoute: false },
+    { name: 'Sobre', href: '#about', isRoute: false },
+    // { name: 'Equipe', href: '#team' }, // TODO: Descomentar quando tiver os membros da equipe
   ];
 
   const scrollToSection = (href) => {
-    if (href.startsWith('/#')) {
-      const element = document.querySelector(href.substring(1));
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
+    setIsOpen(false);
+  };
+
+  const handleHomeClick = (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setIsOpen(false);
   };
 
@@ -166,24 +170,23 @@ const Navbar = () => {
             <div style={styles.desktopNav}>
               {navLinks.map((link) => (
                 link.isRoute ? (
-                  <Link
+                  <a
                     key={link.name}
-                    to={link.href}
+                    href={link.href}
+                    onClick={handleHomeClick}
                     style={styles.navLink}
                     onMouseEnter={(e) => e.target.style.color = '#FFC107'}
                     onMouseLeave={(e) => e.target.style.color = '#B0B0B8'}
                   >
                     {link.name}
-                  </Link>
+                  </a>
                 ) : (
                   <a
                     key={link.name}
                     href={link.href}
                     onClick={(e) => {
-                      if (link.href.startsWith('/#')) {
-                        e.preventDefault();
-                        scrollToSection(link.href);
-                      }
+                      e.preventDefault();
+                      scrollToSection(link.href);
                     }}
                     style={styles.navLink}
                     onMouseEnter={(e) => e.target.style.color = '#FFC107'}
@@ -225,23 +228,21 @@ const Navbar = () => {
         <div style={styles.mobileMenu}>
           {navLinks.map((link) => (
             link.isRoute ? (
-              <Link
+              <a
                 key={link.name}
-                to={link.href}
-                onClick={() => setIsOpen(false)}
+                href={link.href}
+                onClick={handleHomeClick}
                 style={styles.mobileLink}
               >
                 {link.name}
-              </Link>
+              </a>
             ) : (
               <a
                 key={link.name}
                 href={link.href}
                 onClick={(e) => {
-                  if (link.href.startsWith('/#')) {
-                    e.preventDefault();
-                    scrollToSection(link.href);
-                  }
+                  e.preventDefault();
+                  scrollToSection(link.href);
                 }}
                 style={styles.mobileLink}
               >
