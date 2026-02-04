@@ -125,6 +125,7 @@ const EpisodeCard = ({ episode }) => {
       display: 'flex',
       gap: '12px',
       paddingTop: '8px',
+      justifyContent: 'center',
     },
     spotifyBtn: {
       display: 'flex',
@@ -237,7 +238,8 @@ const EpisodeCard = ({ episode }) => {
             </a>
           )}
           
-          {youtube_url && (
+          {/* YouTube button desabilitado */}
+          {/* {youtube_url && (
             <a
               href={youtube_url}
               target="_blank"
@@ -247,6 +249,13 @@ const EpisodeCard = ({ episode }) => {
               onMouseEnter={(e) => { e.target.style.backgroundColor = '#FF0000'; e.target.style.color = 'white'; }}
               onMouseLeave={(e) => { e.target.style.backgroundColor = 'rgba(255, 0, 0, 0.2)'; e.target.style.color = '#FF0000'; }}
             >
+              <svg style={{ width: '16px', height: '16px' }} viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>
+              YouTube
+            </a>
+          )} */}
+        </div>
               <svg style={{ width: '16px', height: '16px' }} viewBox="0 0 24 24" fill="currentColor">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>

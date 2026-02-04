@@ -14,9 +14,9 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Início', href: '/' },
-    { name: 'Episódios', href: '/#episodes' },
-    { name: 'Sobre', href: '/#about' },
+    { name: 'Início', href: '/', isRoute: true },
+    { name: 'Episódios', href: '/#episodes', isRoute: false },
+    { name: 'Sobre', href: '/#about', isRoute: false },
     // { name: 'Equipe', href: '/#team' }, // TODO: Descomentar quando tiver os membros da equipe
   ];
 
@@ -165,21 +165,33 @@ const Navbar = () => {
           {!isMobile && (
             <div style={styles.desktopNav}>
               {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={(e) => {
-                    if (link.href.startsWith('/#')) {
-                      e.preventDefault();
-                      scrollToSection(link.href);
-                    }
-                  }}
-                  style={styles.navLink}
-                  onMouseEnter={(e) => e.target.style.color = '#FFC107'}
-                  onMouseLeave={(e) => e.target.style.color = '#B0B0B8'}
-                >
-                  {link.name}
-                </a>
+                link.isRoute ? (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    style={styles.navLink}
+                    onMouseEnter={(e) => e.target.style.color = '#FFC107'}
+                    onMouseLeave={(e) => e.target.style.color = '#B0B0B8'}
+                  >
+                    {link.name}
+                  </Link>
+                ) : (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    onClick={(e) => {
+                      if (link.href.startsWith('/#')) {
+                        e.preventDefault();
+                        scrollToSection(link.href);
+                      }
+                    }}
+                    style={styles.navLink}
+                    onMouseEnter={(e) => e.target.style.color = '#FFC107'}
+                    onMouseLeave={(e) => e.target.style.color = '#B0B0B8'}
+                  >
+                    {link.name}
+                  </a>
+                )
               ))}
               
               {/* CTA Spotify */}
@@ -212,19 +224,30 @@ const Navbar = () => {
       {isOpen && isMobile && (
         <div style={styles.mobileMenu}>
           {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              onClick={(e) => {
-                if (link.href.startsWith('/#')) {
-                  e.preventDefault();
-                  scrollToSection(link.href);
-                }
-              }}
-              style={styles.mobileLink}
-            >
-              {link.name}
-            </a>
+            link.isRoute ? (
+              <Link
+                key={link.name}
+                to={link.href}
+                onClick={() => setIsOpen(false)}
+                style={styles.mobileLink}
+              >
+                {link.name}
+              </Link>
+            ) : (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={(e) => {
+                  if (link.href.startsWith('/#')) {
+                    e.preventDefault();
+                    scrollToSection(link.href);
+                  }
+                }}
+                style={styles.mobileLink}
+              >
+                {link.name}
+              </a>
+            )
           ))}
           <a
             href="https://open.spotify.com/show/1QpRW5ISZzqqJyd3orYxsy"
