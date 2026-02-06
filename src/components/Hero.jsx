@@ -98,7 +98,7 @@ const Hero = () => {
           marginBottom: '1rem',
           lineHeight: 1.1
         }}>
-          <span style={{ color: 'white' }}>Meto</span>
+          <span style={{ color: 'white' }}>Metô</span>
           <span style={{ color: '#FFC107' }}>Cast</span>
         </h1>
 
