@@ -144,7 +144,7 @@ const Footer = () => {
                 />
               </div>
               <span style={styles.logoText}>
-                Meto<span style={styles.logoHighlight}>Cast</span>
+                Metô<span style={styles.logoHighlight}>Cast</span>
               </span>
             </Link>
             <p style={styles.description}>
