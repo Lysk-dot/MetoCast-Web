@@ -162,7 +162,7 @@ const Team = () => {
         <div style={styles.ctaContainer}>
           <div style={styles.ctaBox}>
             <p style={styles.ctaText}>
-              🎽 Equipe usando as camisas oficiais do MetoCast!
+              🎽 Equipe usando as camisas oficiais do MetôCast!
             </p>
             <a
               href="https://www.instagram.com/meto_cast/"

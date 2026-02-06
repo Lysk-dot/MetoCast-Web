@@ -136,7 +136,7 @@ const About = () => {
             <span style={styles.badge}>🎓 Extensão Universitária</span>
             
             <h2 style={styles.title}>
-              O que é o <span style={styles.highlight}>MetoCast</span>?
+              O que é o <span style={styles.highlight}>MetôCast</span>?
             </h2>
             
             <p style={styles.textLarge}>

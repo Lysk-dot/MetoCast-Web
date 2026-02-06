@@ -184,7 +184,7 @@ const EpisodeCard = ({ episode }) => {
         <div style={{ ...styles.placeholderContainer, display: imageUrl ? 'none' : 'flex' }}>
           <img 
             src={import.meta.env.BASE_URL + 'images/logo-metocast.png'}
-            alt="MetoCast"
+            alt="MetôCast"
             style={styles.placeholderLogo}
           />
         </div>

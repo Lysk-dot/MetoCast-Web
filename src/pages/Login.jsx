@@ -93,7 +93,7 @@ const Login = () => {
               </div>
             </Link>
             <h1 className="font-heading text-2xl font-bold text-white mb-2">
-              Painel <span className="text-yellow-primary">MetoCast</span>
+              Painel <span className="text-yellow-primary">MetôCast</span>
             </h1>
             <p className="text-gray-500">
               Faça login para acessar o painel administrativo
@@ -175,7 +175,7 @@ const Login = () => {
 
         {/* Nota de demo */}
         <p className="text-center text-gray-600 text-xs mt-6">
-          Área restrita para administradores do MetoCast
+          Área restrita para administradores do MetôCast
         </p>
       </div>
     </div>

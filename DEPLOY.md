@@ -1,4 +1,4 @@
-# 🚀 Documentação de Deploy - MetoCast
+# 🚀 Documentação de Deploy - MetôCast
 
 ## 📋 Sumário
 
@@ -13,7 +13,7 @@
 
 ## 🎯 Visão Geral
 
-O MetoCast está hospedado em uma arquitetura serverless gratuita:
+O MetôCast está hospedado em uma arquitetura serverless gratuita:
 
 - **Frontend**: GitHub Pages
 - **Backend**: Railway
@@ -26,7 +26,7 @@ O MetoCast está hospedado em uma arquitetura serverless gratuita:
 ```
 ┌─────────────────────────────────────────────┐
 │  GitHub Pages (Frontend React)              │
-│  https://lysk-dot.github.io/MetoCast-Web/   │
+│  https://lysk-dot.github.io/MetôCast-Web/   │
 └────────────────┬────────────────────────────┘
                  │
                  │ HTTPS Requests
@@ -53,7 +53,7 @@ O MetoCast está hospedado em uma arquitetura serverless gratuita:
 ### Configuração Inicial
 
 1. **Projeto criado**: `creative-light` (production)
-2. **Repositório**: GitHub → `MetoCast` (backend Python/FastAPI)
+2. **Repositório**: GitHub → `MetôCast` (backend Python/FastAPI)
 3. **Banco de dados**: PostgreSQL adicionado ao projeto
 
 ### Variáveis de Ambiente
@@ -89,7 +89,7 @@ alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 ### Configuração Inicial
 
-1. **Repositório**: `Lysk-dot/MetoCast-Web`
+1. **Repositório**: `Lysk-dot/MetôCast-Web`
 2. **Deploy**: GitHub Actions (workflow automático)
 3. **Source**: GitHub Actions (configurado em Settings → Pages)
 
@@ -109,7 +109,7 @@ const API_BASE = import.meta.env.PROD
 ```javascript
 export default defineConfig({
   plugins: [react()],
-  base: '/MetoCast-Web/', // Subpath do GitHub Pages
+  base: '/MetôCast-Web/', // Subpath do GitHub Pages
 })
 ```
 
@@ -162,7 +162,7 @@ jobs:
 
 | Serviço | URL | Descrição |
 |---------|-----|-----------|
-| **Frontend** | [https://lysk-dot.github.io/MetoCast-Web/](https://lysk-dot.github.io/MetoCast-Web/) | Site público |
+| **Frontend** | [https://lysk-dot.github.io/MetôCast-Web/](https://lysk-dot.github.io/MetôCast-Web/) | Site público |
 | **Backend API** | [https://metocast-production.up.railway.app/api](https://metocast-production.up.railway.app/api) | API REST |
 | **API Docs** | [https://metocast-production.up.railway.app/docs](https://metocast-production.up.railway.app/docs) | Swagger UI |
 | **Redoc** | [https://metocast-production.up.railway.app/redoc](https://metocast-production.up.railway.app/redoc) | Documentação alternativa |
@@ -180,15 +180,15 @@ jobs:
 - **Nome do Projeto**: creative-light
 - **Ambiente**: production
 - **Serviços**:
-  - **MetoCast** (Backend API) - [https://metocast-production.up.railway.app](https://metocast-production.up.railway.app)
+  - **MetôCast** (Backend API) - [https://metocast-production.up.railway.app](https://metocast-production.up.railway.app)
   - **Postgres** (Database) - postgres.railway.internal:5432
 
 ### GitHub
 
-- **Frontend Repo**: [https://github.com/Lysk-dot/MetoCast-Web](https://github.com/Lysk-dot/MetoCast-Web)
-- **Backend Repo**: [https://github.com/Lysk-dot/MetoCast](https://github.com/Lysk-dot/MetoCast)
-- **Actions (Deploy)**: [https://github.com/Lysk-dot/MetoCast-Web/actions](https://github.com/Lysk-dot/MetoCast-Web/actions)
-- **Pages Settings**: [https://github.com/Lysk-dot/MetoCast-Web/settings/pages](https://github.com/Lysk-dot/MetoCast-Web/settings/pages)
+- **Frontend Repo**: [https://github.com/Lysk-dot/MetôCast-Web](https://github.com/Lysk-dot/MetôCast-Web)
+- **Backend Repo**: [https://github.com/Lysk-dot/MetôCast](https://github.com/Lysk-dot/MetôCast)
+- **Actions (Deploy)**: [https://github.com/Lysk-dot/MetôCast-Web/actions](https://github.com/Lysk-dot/MetôCast-Web/actions)
+- **Pages Settings**: [https://github.com/Lysk-dot/MetôCast-Web/settings/pages](https://github.com/Lysk-dot/MetôCast-Web/settings/pages)
 
 ---
 
@@ -208,12 +208,12 @@ jobs:
 
 #### Backend
 1. Faça as alterações no código do backend
-2. Commit e push para `main` no repositório MetoCast
+2. Commit e push para `main` no repositório MetôCast
 3. O Railway faz deploy automaticamente
 
 ### Como adicionar novas variáveis de ambiente
 
-1. Acesse Railway → MetoCast → Variables
+1. Acesse Railway → MetôCast → Variables
 2. Clique em "New Variable"
 3. Adicione nome e valor
 4. O Railway faz redeploy automaticamente
@@ -223,12 +223,12 @@ jobs:
 As migrations rodam automaticamente no start command.
 
 Para rodar manualmente no Railway:
-1. MetoCast → Settings → Redeploy
+1. MetôCast → Settings → Redeploy
 
 ### Como ver logs
 
 **Railway:**
-1. Clique no serviço MetoCast
+1. Clique no serviço MetôCast
 2. Aba "Deployments"
 3. Clique no deployment ativo
 4. Veja os logs em tempo real
@@ -241,7 +241,7 @@ Para rodar manualmente no Railway:
 ### Como configurar domínio customizado
 
 #### No GitHub Pages:
-1. Acesse: [Settings → Pages → Custom domain](https://github.com/Lysk-dot/MetoCast-Web/settings/pages)
+1. Acesse: [Settings → Pages → Custom domain](https://github.com/Lysk-dot/MetôCast-Web/settings/pages)
 2. Adicione seu domínio (ex: `metocast.org`)
 3. Configure DNS no seu provedor:
    ```
@@ -251,11 +251,11 @@ Para rodar manualmente no Railway:
    ```
 4. **Importante**: Após configurar o domínio customizado, atualize o `base` no `vite.config.js`:
    ```javascript
-   base: '/', // Mude de '/MetoCast-Web/' para '/'
+   base: '/', // Mude de '/MetôCast-Web/' para '/'
    ```
 
 #### No Railway:
-1. Acesse: [MetoCast → Settings → Networking](https://railway.app/project/6b5d0bf0-4bfc-49df-a1cb-9daf1de305a5)
+1. Acesse: [MetôCast → Settings → Networking](https://railway.app/project/6b5d0bf0-4bfc-49df-a1cb-9daf1de305a5)
 2. Custom Domain → Add domain
 3. Configure DNS conforme instruções do Railway
 
@@ -413,7 +413,7 @@ return isAuthenticated ? children : <Navigate />;
 
 **Como Testar**:
 1. Abra o DevTools (F12) → Console
-2. Acesse `http://localhost:5173/MetoCast-Web/login`
+2. Acesse `http://localhost:5173/MetôCast-Web/login`
 3. Verifique os logs:
    ```
    [AuthProvider] Render - loading: true, isAuth: false
@@ -564,7 +564,7 @@ const Login = () => {
 
 ### Vite Base Path
 - **Desenvolvimento**: `/` (localhost)
-- **Produção (subpath)**: `/MetoCast-Web/`
+- **Produção (subpath)**: `/MetôCast-Web/`
 - **Produção (domínio próprio)**: `/`
 
 ### Variáveis de Ambiente (Railway)
@@ -591,8 +591,8 @@ ALLOWED_ORIGINS=https://lysk-dot.github.io
 - **Organização**: creative-light (Railway)
 - **GitHub**: Lysk-dot
 - **Repositórios**:
-  - Frontend: MetoCast-Web
-  - Backend: MetoCast
+  - Frontend: MetôCast-Web
+  - Backend: MetôCast
 
 ---
 

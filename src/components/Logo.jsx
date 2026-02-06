@@ -2,7 +2,7 @@ const Logo = ({ size = 160, className = '' }) => {
   return (
     <img 
       src={import.meta.env.BASE_URL + 'images/logo-metocast.png'} 
-      alt="MetoCast Logo"
+      alt="MetôCast Logo"
       width={size}
       height={size}
       style={{

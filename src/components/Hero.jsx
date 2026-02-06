@@ -77,7 +77,7 @@ const Hero = () => {
           }}>
             <img 
               src={import.meta.env.BASE_URL + 'images/logo-metocast.png'}
-              alt="MetoCast Logo"
+              alt="MetôCast Logo"
               style={{
                 width: '100%',
                 height: '100%',

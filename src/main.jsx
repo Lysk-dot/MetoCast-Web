@@ -8,8 +8,8 @@ const redirect = sessionStorage.getItem('redirect');
 if (redirect) {
   sessionStorage.removeItem('redirect');
   // Remove o basename e redireciona para a rota correta
-  const path = redirect.replace('/MetoCast-Web', '') || '/';
-  window.history.replaceState(null, '', '/MetoCast-Web' + path);
+  const path = redirect.replace('/MetôCast-Web', '') || '/';
+  window.history.replaceState(null, '', '/MetôCast-Web' + path);
 }
 
 createRoot(document.getElementById('root')).render(

@@ -138,7 +138,7 @@ const Footer = () => {
               }}>
                 <img 
                   src={import.meta.env.BASE_URL + 'images/logo-metocast.png'} 
-                  alt="MetoCast"
+                  alt="MetôCast"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { e.target.src = '/images/logo-metocast.svg'; }}
                 />
@@ -175,7 +175,7 @@ const Footer = () => {
           {/* Copyright e Admin link */}
           <div style={styles.copyrightSection}>
             <p style={styles.copyright}>
-              © 2026 MetoCast - Metodista
+              © 2026 MetôCast - Metodista
             </p>
             <p style={styles.madeWith}>
               Feito com <Heart style={{ width: '12px', height: '12px', color: '#E4405F' }} /> por estudantes

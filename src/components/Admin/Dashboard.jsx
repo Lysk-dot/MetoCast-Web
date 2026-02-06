@@ -104,7 +104,7 @@ const Dashboard = ({ onNavigate }) => {
           Bem-vindo ao Painel! 👋
         </h1>
         <p className="text-gray-400">
-          Gerencie os episódios e links do MetoCast.
+          Gerencie os episódios e links do MetôCast.
         </p>
       </div>
 
@@ -172,13 +172,12 @@ const Dashboard = ({ onNavigate }) => {
         <div className="flex items-start gap-4">
           <div className="p-3 rounded-xl bg-yellow-primary/20">
             <Headphones className="w-6 h-6 text-yellow-primary" />
-          </div>
           <div>
             <h3 className="font-heading font-bold text-white mb-2">
-              MetoCast Admin
+              MetôCast Admin
             </h3>
             <p className="text-gray-400 text-sm">
-              Este painel permite gerenciar todo o conteúdo do MetoCast. 
+              Este painel permite gerenciar todo o conteúdo do MetôCast. 
               Adicione novos episódios, edite informações e gerencie os links oficiais 
               para as plataformas de streaming.
             </p>

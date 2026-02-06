@@ -1,10 +1,10 @@
-# 🎙️ MetoCast Web
+# 🎙️ MetôCast Web
 
-Site oficial do **MetoCast** - Podcast dos estudantes da Universidade Metodista.
+Site oficial do **MetôCast** - Podcast dos estudantes da Universidade Metodista.
 
 ## 📋 Sobre o Projeto
 
-O MetoCast Web é a plataforma web do podcast MetoCast, desenvolvida para divulgar episódios, conectar com a comunidade e gerenciar conteúdo através de um painel administrativo.
+O MetôCast Web é a plataforma web do podcast MetôCast, desenvolvida para divulgar episódios, conectar com a comunidade e gerenciar conteúdo através de um painel administrativo.
 
 ### ✨ Funcionalidades
 
@@ -44,7 +44,7 @@ O MetoCast Web é a plataforma web do podcast MetoCast, desenvolvida para divulg
 1. **Clone o repositório:**
 ```bash
 git clone https://github.com/seu-usuario/MetoCast-Web.git
-cd MetoCast-Web
+cd MetôCast-Web
 ```
 
 2. **Instale as dependências:**
@@ -61,10 +61,10 @@ npm run dev
 
 ### Backend
 
-O frontend se conecta ao backend MetoCast que roda em Docker:
+O frontend se conecta ao backend MetôCast que roda em Docker:
 
 ```bash
-cd ../MetoCast
+cd ../MetôCast
 docker compose up -d
 ```
 
@@ -73,7 +73,7 @@ API disponível em: http://localhost:8000
 ## 📁 Estrutura do Projeto
 
 ```
-MetoCast-Web/
+MetôCast-Web/
 ├── public/
 │   └── images/
 │       └── logo-metocast.png    # Logo do podcast
@@ -126,7 +126,7 @@ MetoCast-Web/
 
 ## 📱 Integração com App Mobile
 
-O site compartilha o mesmo backend com o app mobile Flutter (MetoCast-App), garantindo sincronização de dados.
+O site compartilha o mesmo backend com o app mobile Flutter (MetôCast-App), garantindo sincronização de dados.
 
 ## 📡 API Endpoints
 
@@ -161,4 +161,4 @@ Este projeto é de uso interno da Universidade Metodista.
 
 ---
 
-Feito com ❤️ pela equipe MetoCast
+Feito com ❤️ pela equipe MetôCast
