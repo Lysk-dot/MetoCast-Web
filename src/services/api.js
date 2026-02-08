@@ -1,13 +1,29 @@
 import axios from 'axios';
 
-// Detecta se está em GitHub Pages (produção)
-const isProduction = window.location.hostname.includes('github.io');
+// Configuração da API Base URL
+// Prioridade: 
+// 1. Variável de ambiente (VITE_API_URL)
+// 2. Detecção automática (GitHub Pages vs localhost)
+const getApiBaseUrl = () => {
+  // Se houver variável de ambiente, usa ela
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Fallback: detecção automática
+  const isGithubPages = window.location.hostname.includes('github.io');
+  return isGithubPages
+    ? 'https://metocast-production.up.railway.app/api'
+    : 'http://localhost:8000/api';
+};
 
-const API_BASE = isProduction
-  ? 'https://metocast-production.up.railway.app/api'
-  : 'http://localhost:8000/api';
+const API_BASE = getApiBaseUrl();
+const ENV = import.meta.env.VITE_ENV || 'development';
 
-console.log('API Base URL:', API_BASE, '(Production:', isProduction, ')');
+console.log('🚀 MetôCast Web - Configuração:');
+console.log('  - API Base URL:', API_BASE);
+console.log('  - Ambiente:', ENV);
+console.log('  - Hostname:', window.location.hostname);
 
 // Criar instância do axios com configurações base
 const apiClient = axios.create({

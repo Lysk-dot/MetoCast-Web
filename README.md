@@ -70,6 +70,45 @@ docker compose up -d
 
 API disponível em: http://localhost:8000
 
+## 🏠 Instalação On-Premise
+
+Para instalar o MetôCast em ambiente on-premise (servidor próprio), siga o guia completo:
+
+📖 **[Guia de Instalação On-Premise](SETUP_ON_PREMISE.md)**
+
+### Quick Start On-Premise
+
+1. Configure o arquivo `.env`:
+```bash
+cp .env.example .env
+nano .env
+```
+
+2. Ajuste a URL da API:
+```env
+VITE_API_URL=http://seu-servidor:8000/api
+VITE_ENV=production
+```
+
+3. Execute o script de deploy:
+```bash
+./deploy.sh
+```
+
+4. Configure o Nginx:
+```bash
+sudo cp nginx.conf.example /etc/nginx/sites-available/metocast
+sudo ln -s /etc/nginx/sites-available/metocast /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+**Arquivos de referência:**
+- `SETUP_ON_PREMISE.md` - Guia completo de instalação
+- `.env.example` - Exemplo de variáveis de ambiente
+- `nginx.conf.example` - Configuração Nginx pronta
+- `deploy.sh` - Script automatizado de build
+
 ## 📁 Estrutura do Projeto
 
 ```

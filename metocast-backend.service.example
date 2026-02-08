@@ -1,0 +1,59 @@
+# ========================================
+# Serviço systemd - MetôCast Backend
+# ========================================
+#
+# Este arquivo deve ser copiado para:
+# /etc/systemd/system/metocast-backend.service
+#
+# Comandos:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable metocast-backend
+#   sudo systemctl start metocast-backend
+#   sudo systemctl status metocast-backend
+#
+# Logs:
+#   sudo journalctl -u metocast-backend -f
+# ========================================
+
+[Unit]
+Description=MetôCast Backend API (FastAPI)
+Documentation=https://github.com/Lysk-dot/MetôCast
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+
+# ⚠️ AJUSTE O USUÁRIO E GRUPO (recomendado: www-data ou seu usuário)
+User=www-data
+Group=www-data
+
+# ⚠️ AJUSTE O CAMINHO DO PROJETO
+WorkingDirectory=/opt/metocast/backend
+
+# Variáveis de ambiente
+Environment="PATH=/opt/metocast/backend/venv/bin"
+Environment="PYTHONUNBUFFERED=1"
+
+# ⚠️ AJUSTE A PORTA SE NECESSÁRIO (deve coincidir com nginx.conf)
+# --workers: número de processos (recomendado: CPU cores * 2 + 1)
+ExecStart=/opt/metocast/backend/venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 4 \
+    --log-level info
+
+# Restart automático
+Restart=always
+RestartSec=10
+
+# Limites de recursos (opcional)
+LimitNOFILE=65536
+MemoryMax=512M
+
+# Segurança (opcional - pode precisar ajustar conforme necessidades)
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
