@@ -31,7 +31,49 @@ O MetôCast Web é a plataforma web do podcast MetôCast, desenvolvida para divu
 - **Notificações:** React Hot Toast
 - **Backend:** FastAPI + PostgreSQL (container Docker separado)
 
+
 ## 🚀 Instalação
+
+## 🔧 Configuração de Ambiente
+
+### Desenvolvimento Local
+
+1. **Copie o arquivo de exemplo:**
+```bash
+cp .env.example .env
+```
+
+2. **Edite o `.env` se necessário:**
+```env
+VITE_API_URL=http://localhost:8000/api
+```
+
+3. **Inicie o servidor:**
+```bash
+npm run dev
+```
+
+### Produção
+
+Para deploy em produção, configure as variáveis de ambiente:
+
+**GitHub Pages:**
+- Não precisa configurar (usa base URL relativa)
+
+**CloudFlare / Domínio Próprio:**
+- Configure `VITE_API_URL` para apontar para sua API
+
+**Exemplo `.env.production`:**
+```env
+VITE_API_URL=https://api.metocast.seudominio.com/api
+```
+
+**Build para produção:**
+```bash
+npm run build
+```
+
+Os arquivos estarão em `dist/` prontos para deploy.
 
 ### Pré-requisitos
 
