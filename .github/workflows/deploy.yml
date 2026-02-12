@@ -1,53 +1,42 @@
-name: Deploy to GitHub Pages
+name: Deploy Frontend to Server
 
 on:
   push:
-    branches: ['main']
+    branches: [Stable]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: 'pages'
-  cancel-in-progress: true
-
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist'
-
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
+    runs-on: self-hosted
+    
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: Stable
+      
+      - name: Pull latest changes
+        run: |
+          cd /home/github-runner/repos/MetoCast-Web
+          git pull origin Stable
+      
+      - name: Install Node.js dependencies
+        run: |
+          cd /home/github-runner/repos/MetoCast-Web
+          npm ci
+      
+      - name: Build frontend
+        run: |
+          cd /home/github-runner/repos/MetoCast-Web
+          npm run build
+      
+      - name: Deploy to Nginx
+        run: |
+          cd /home/github-runner/repos/MetoCast-Web
+          rm -rf /var/www/bytelair.pro/*
+          cp -r dist/* /var/www/bytelair.pro/
+          chown -R www-data:www-data /var/www/bytelair.pro/
+      
+      - name: Reload Nginx
+        run: |
+          systemctl reload nginx
