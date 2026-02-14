@@ -36,6 +36,7 @@ jobs:
           rm -rf /var/www/bytelair.pro/*
           cp -r dist/* /var/www/bytelair.pro/
           chown -R www-data:www-data /var/www/bytelair.pro/
+          chmod -R 755 /var/www/bytelair.pro/
       
       - name: Reload Nginx
         run: |
