@@ -17,10 +17,7 @@ jobs:
       
       - name: Setup environment file
         run: |
-          if [ ! -f .env ]; then
-            echo "ERROR: .env file not found. Create it first at $(pwd)/.env"
-            exit 1
-          fi
+          cp /home/felipe/.env.metocast .env
       
       - name: Deploy with Docker Compose
         run: |
