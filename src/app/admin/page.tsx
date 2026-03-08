@@ -304,13 +304,6 @@ function SuggestionsTab({
   );
 }
 
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /* ===== Participações Tab ===== */
 function ParticipacoesTab({ authHeader }: { authHeader: Record<string, string> }) {
   const [items, setItems] = useState<Participacao[]>([]);
