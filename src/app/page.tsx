@@ -17,7 +17,7 @@ export default async function HomePage() {
       {/* Latest Episodes */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="font-heading text-2xl sm:text-3xl font-bold text-white">
+          <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
             Últimos Episódios
           </h2>
           <Link

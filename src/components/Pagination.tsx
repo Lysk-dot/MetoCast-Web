@@ -18,13 +18,13 @@ export default function Pagination({ currentPage, totalPages, basePath }: Pagina
       {currentPage > 1 ? (
         <Link
           href={currentPage - 1 === 1 ? basePath : `${basePath}?page=${currentPage - 1}`}
-          className="p-2 rounded-lg bg-surface-card hover:bg-surface-hover text-gray-400 hover:text-white transition-colors"
+          className="p-2 rounded-lg bg-surface-card hover:bg-surface-hover text-foreground-muted hover:text-foreground transition-colors"
           aria-label="Página anterior"
         >
           <ChevronLeft size={18} />
         </Link>
       ) : (
-        <span className="p-2 rounded-lg bg-surface-card text-gray-600 cursor-not-allowed">
+        <span className="p-2 rounded-lg bg-surface-card text-foreground-faint cursor-not-allowed">
           <ChevronLeft size={18} />
         </span>
       )}
@@ -36,8 +36,8 @@ export default function Pagination({ currentPage, totalPages, basePath }: Pagina
           href={page === 1 ? basePath : `${basePath}?page=${page}`}
           className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
             page === currentPage
-              ? "bg-primary-yellow text-surface-darkest"
-              : "bg-surface-card text-gray-400 hover:bg-surface-hover hover:text-white"
+              ? "bg-primary-yellow text-gray-900"
+              : "bg-surface-card text-foreground-muted hover:bg-surface-hover hover:text-foreground"
           }`}
           aria-current={page === currentPage ? "page" : undefined}
         >
@@ -49,13 +49,13 @@ export default function Pagination({ currentPage, totalPages, basePath }: Pagina
       {currentPage < totalPages ? (
         <Link
           href={`${basePath}?page=${currentPage + 1}`}
-          className="p-2 rounded-lg bg-surface-card hover:bg-surface-hover text-gray-400 hover:text-white transition-colors"
+          className="p-2 rounded-lg bg-surface-card hover:bg-surface-hover text-foreground-muted hover:text-foreground transition-colors"
           aria-label="Próxima página"
         >
           <ChevronRight size={18} />
         </Link>
       ) : (
-        <span className="p-2 rounded-lg bg-surface-card text-gray-600 cursor-not-allowed">
+        <span className="p-2 rounded-lg bg-surface-card text-foreground-faint cursor-not-allowed">
           <ChevronRight size={18} />
         </span>
       )}

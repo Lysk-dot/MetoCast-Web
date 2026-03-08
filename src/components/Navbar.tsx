@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import Logo from "./Logo";
+import ThemeToggle from "./ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "Início" },
@@ -23,32 +24,36 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
             <Logo size={36} />
-            <span className="font-heading font-bold text-lg text-white">
+            <span className="font-heading font-bold text-lg text-foreground">
               MetôCast
             </span>
           </Link>
 
-          {/* Desktop Links */}
+          {/* Desktop Links + Theme Toggle */}
           <div className="hidden md:flex items-center gap-6">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-gray-300 hover:text-primary-yellow transition-colors"
+                className="text-sm text-foreground-secondary hover:text-primary-yellow transition-colors"
               >
                 {link.label}
               </Link>
             ))}
+            <ThemeToggle />
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden text-gray-300 hover:text-white"
-            aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile: Theme Toggle + Menu Button */}
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="text-foreground-secondary hover:text-foreground"
+              aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+            >
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -60,7 +65,7 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className="px-4 py-2 text-gray-300 hover:text-primary-yellow hover:bg-surface-hover rounded-lg transition-colors"
+                  className="px-4 py-2 text-foreground-secondary hover:text-primary-yellow hover:bg-surface-hover rounded-lg transition-colors"
                 >
                   {link.label}
                 </Link>

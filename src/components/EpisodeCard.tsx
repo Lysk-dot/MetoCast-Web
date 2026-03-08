@@ -30,26 +30,26 @@ export default function EpisodeCard({ episode }: EpisodeCardProps) {
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
           <div className="w-12 h-12 rounded-full bg-primary-yellow/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Play size={20} className="text-surface-darkest ml-0.5" />
+            <Play size={20} className="text-gray-900 ml-0.5" />
           </div>
         </div>
       </Link>
 
       {/* Content */}
       <div className="p-5 space-y-3">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
+        <div className="flex items-center gap-2 text-xs text-foreground-faint">
           <Calendar size={12} />
           <time dateTime={episode.publishedAt}>{date}</time>
         </div>
 
         <Link href={`/episodio/${episode.videoId}`}>
-          <h3 className="font-heading font-semibold text-white group-hover:text-primary-yellow transition-colors line-clamp-2">
+          <h3 className="font-heading font-semibold text-foreground group-hover:text-primary-yellow transition-colors line-clamp-2">
             {episode.title}
           </h3>
         </Link>
 
         {shortDescription && (
-          <p className="text-sm text-gray-400 line-clamp-2">
+          <p className="text-sm text-foreground-muted line-clamp-2">
             {shortDescription}
           </p>
         )}

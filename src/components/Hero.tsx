@@ -21,12 +21,12 @@ export default function Hero() {
         </div>
 
         {/* Title */}
-        <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-extrabold text-white">
+        <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-extrabold text-foreground">
           Metô<span className="text-primary-yellow">Cast</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg sm:text-xl text-foreground-secondary max-w-2xl mx-auto leading-relaxed">
           Podcast criado por estudantes da Universidade Metodista para discutir
           educação, vida universitária, cultura e temas sociais relevantes.
         </p>
@@ -62,7 +62,7 @@ export default function Hero() {
           </a>
           <Link
             href="/episodios"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary-yellow text-surface-darkest font-semibold rounded-full hover:brightness-110 transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary-yellow text-gray-900 font-semibold rounded-full hover:brightness-110 transition-all"
           >
             <Play size={18} />
             Ver Episódios

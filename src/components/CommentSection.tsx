@@ -63,7 +63,7 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
 
   return (
     <section className="space-y-6">
-      <h2 className="font-heading text-xl font-semibold text-white flex items-center gap-2">
+      <h2 className="font-heading text-xl font-semibold text-foreground flex items-center gap-2">
         <MessageCircle size={20} />
         Comentários ({comments.length})
       </h2>
@@ -71,7 +71,7 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
       {/* Form */}
       <form onSubmit={handleSubmit} className="bg-surface-card border border-surface-border rounded-xl p-5 space-y-4">
         <div>
-          <label htmlFor="comment-author" className="block text-sm text-gray-400 mb-1">
+          <label htmlFor="comment-author" className="block text-sm text-foreground-muted mb-1">
             Seu nome
           </label>
           <input
@@ -82,12 +82,12 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
             maxLength={100}
             required
             placeholder="Digite seu nome..."
-            className="w-full px-4 py-2.5 bg-surface rounded-lg border border-surface-border text-white placeholder-gray-500 focus:outline-none focus:border-primary-yellow/50 transition-colors"
+            className="w-full px-4 py-2.5 bg-surface rounded-lg border border-surface-border text-foreground placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50 transition-colors"
           />
         </div>
 
         <div>
-          <label htmlFor="comment-message" className="block text-sm text-gray-400 mb-1">
+          <label htmlFor="comment-message" className="block text-sm text-foreground-muted mb-1">
             Comentário
           </label>
           <textarea
@@ -98,7 +98,7 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
             required
             rows={3}
             placeholder="Escreva seu comentário..."
-            className="w-full px-4 py-2.5 bg-surface rounded-lg border border-surface-border text-white placeholder-gray-500 focus:outline-none focus:border-primary-yellow/50 transition-colors resize-none"
+            className="w-full px-4 py-2.5 bg-surface rounded-lg border border-surface-border text-foreground placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50 transition-colors resize-none"
           />
         </div>
 
@@ -107,7 +107,7 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-yellow text-surface-darkest font-semibold rounded-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-yellow text-gray-900 font-semibold rounded-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Send size={16} />
           {loading ? "Enviando..." : "Enviar"}
@@ -129,11 +129,11 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
           >
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-surface-hover flex items-center justify-center">
-                <User size={14} className="text-gray-400" />
+                <User size={14} className="text-foreground-muted" />
               </div>
               <div>
-                <span className="text-sm font-medium text-white">{comment.author}</span>
-                <span className="text-xs text-gray-500 ml-2">
+                <span className="text-sm font-medium text-foreground">{comment.author}</span>
+                <span className="text-xs text-foreground-faint ml-2">
                   {new Date(comment.createdAt).toLocaleDateString("pt-BR", {
                     day: "2-digit",
                     month: "short",
@@ -142,7 +142,7 @@ export default function CommentSection({ videoId }: CommentSectionProps) {
                 </span>
               </div>
             </div>
-            <p className="text-sm text-gray-300 pl-10 whitespace-pre-wrap break-words">
+            <p className="text-sm text-foreground-secondary pl-10 whitespace-pre-wrap break-words">
               {comment.message}
             </p>
           </div>

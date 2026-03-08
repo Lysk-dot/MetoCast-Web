@@ -51,13 +51,13 @@ export default function SuggestionForm({ onSubmitted }: { onSubmitted: () => voi
 
   return (
     <form onSubmit={handleSubmit} className="bg-surface-card border border-surface-border rounded-xl p-6 space-y-4">
-      <h2 className="font-heading text-lg font-semibold text-white flex items-center gap-2">
+      <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
         <Lightbulb size={20} className="text-primary-yellow" />
         Sugira um tema
       </h2>
 
       <div>
-        <label htmlFor="sug-author" className="block text-sm text-gray-400 mb-1">
+        <label htmlFor="sug-author" className="block text-sm text-foreground-muted mb-1">
           Seu nome
         </label>
         <input
@@ -68,12 +68,12 @@ export default function SuggestionForm({ onSubmitted }: { onSubmitted: () => voi
           maxLength={100}
           required
           placeholder="Digite seu nome..."
-          className="w-full px-4 py-2.5 bg-surface rounded-lg border border-surface-border text-white placeholder-gray-500 focus:outline-none focus:border-primary-yellow/50 transition-colors"
+          className="w-full px-4 py-2.5 bg-surface rounded-lg border border-surface-border text-foreground placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50 transition-colors"
         />
       </div>
 
       <div>
-        <label htmlFor="sug-title" className="block text-sm text-gray-400 mb-1">
+        <label htmlFor="sug-title" className="block text-sm text-foreground-muted mb-1">
           Título da sugestão
         </label>
         <input
@@ -84,12 +84,12 @@ export default function SuggestionForm({ onSubmitted }: { onSubmitted: () => voi
           maxLength={200}
           required
           placeholder="Ex: Saúde mental na universidade"
-          className="w-full px-4 py-2.5 bg-surface rounded-lg border border-surface-border text-white placeholder-gray-500 focus:outline-none focus:border-primary-yellow/50 transition-colors"
+          className="w-full px-4 py-2.5 bg-surface rounded-lg border border-surface-border text-foreground placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50 transition-colors"
         />
       </div>
 
       <div>
-        <label htmlFor="sug-desc" className="block text-sm text-gray-400 mb-1">
+        <label htmlFor="sug-desc" className="block text-sm text-foreground-muted mb-1">
           Descrição
         </label>
         <textarea
@@ -100,7 +100,7 @@ export default function SuggestionForm({ onSubmitted }: { onSubmitted: () => voi
           required
           rows={4}
           placeholder="Descreva sua ideia para o episódio..."
-          className="w-full px-4 py-2.5 bg-surface rounded-lg border border-surface-border text-white placeholder-gray-500 focus:outline-none focus:border-primary-yellow/50 transition-colors resize-none"
+          className="w-full px-4 py-2.5 bg-surface rounded-lg border border-surface-border text-foreground placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50 transition-colors resize-none"
         />
       </div>
 
@@ -110,7 +110,7 @@ export default function SuggestionForm({ onSubmitted }: { onSubmitted: () => voi
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-yellow text-surface-darkest font-semibold rounded-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-yellow text-gray-900 font-semibold rounded-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Send size={16} />
         {loading ? "Enviando..." : "Enviar sugestão"}

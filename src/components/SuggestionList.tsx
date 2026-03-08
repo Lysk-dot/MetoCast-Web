@@ -54,7 +54,7 @@ export default function SuggestionList() {
       <SuggestionForm onSubmitted={fetchSuggestions} />
 
       <div className="space-y-4">
-        <h2 className="font-heading text-xl font-semibold text-white">
+        <h2 className="font-heading text-xl font-semibold text-foreground">
           Sugestões da comunidade ({suggestions.length})
         </h2>
 
@@ -71,8 +71,8 @@ export default function SuggestionList() {
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 space-y-1">
-                <h3 className="font-heading font-semibold text-white">{sug.title}</h3>
-                <div className="flex items-center gap-3 text-xs text-gray-500">
+                <h3 className="font-heading font-semibold text-foreground">{sug.title}</h3>
+                <div className="flex items-center gap-3 text-xs text-foreground-faint">
                   <span className="flex items-center gap-1">
                     <User size={12} />
                     {sug.author}
@@ -90,7 +90,7 @@ export default function SuggestionList() {
                 className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
                   votedIds.has(sug.id)
                     ? "bg-primary-yellow/20 text-primary-yellow cursor-default"
-                    : "bg-surface-hover text-gray-400 hover:text-primary-yellow hover:bg-surface-hover"
+                    : "bg-surface-hover text-foreground-muted hover:text-primary-yellow hover:bg-surface-hover"
                 }`}
                 aria-label={`Votar (${sug.votes} votos)`}
               >
@@ -99,7 +99,7 @@ export default function SuggestionList() {
               </button>
             </div>
 
-            <p className="text-sm text-gray-300 whitespace-pre-wrap break-words">
+            <p className="text-sm text-foreground-secondary whitespace-pre-wrap break-words">
               {sug.description}
             </p>
           </div>

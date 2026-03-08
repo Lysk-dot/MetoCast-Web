@@ -3,6 +3,7 @@ module.exports = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -19,11 +20,17 @@ module.exports = {
           teal: '#00CEC9',
         },
         surface: {
-          darkest: '#0D0D0F',
-          DEFAULT: '#1A1A1F',
-          card: '#1E1E24',
-          hover: '#2A2A32',
-          border: '#2A2A32',
+          darkest: 'rgb(var(--surface-darkest) / <alpha-value>)',
+          DEFAULT: 'rgb(var(--surface) / <alpha-value>)',
+          card: 'rgb(var(--surface-card) / <alpha-value>)',
+          hover: 'rgb(var(--surface-hover) / <alpha-value>)',
+          border: 'rgb(var(--surface-border) / <alpha-value>)',
+        },
+        foreground: {
+          DEFAULT: 'rgb(var(--foreground) / <alpha-value>)',
+          secondary: 'rgb(var(--foreground-secondary) / <alpha-value>)',
+          muted: 'rgb(var(--foreground-muted) / <alpha-value>)',
+          faint: 'rgb(var(--foreground-faint) / <alpha-value>)',
         },
         brand: {
           spotify: '#1DB954',

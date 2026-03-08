@@ -4,12 +4,38 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap');
 
+/* ===== Theme Variables ===== */
+:root {
+  /* Light mode — cream/pearl + blue & yellow pastel */
+  --surface-darkest: 247 244 239;
+  --surface: 239 235 228;
+  --surface-card: 255 255 255;
+  --surface-hover: 229 224 215;
+  --surface-border: 218 212 202;
+  --foreground: 28 25 23;
+  --foreground-secondary: 68 64 60;
+  --foreground-muted: 120 113 108;
+  --foreground-faint: 161 155 150;
+}
+
+.dark {
+  --surface-darkest: 13 13 15;
+  --surface: 26 26 31;
+  --surface-card: 30 30 36;
+  --surface-hover: 42 42 50;
+  --surface-border: 42 42 50;
+  --foreground: 245 245 245;
+  --foreground-secondary: 209 213 219;
+  --foreground-muted: 156 163 175;
+  --foreground-faint: 107 114 128;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-surface-darkest text-gray-200 antialiased;
+  @apply bg-surface-darkest text-foreground antialiased;
 }
 
 /* Scrollbar */
@@ -23,7 +49,7 @@ body {
   @apply bg-surface-hover rounded-full;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-600;
+  @apply bg-foreground-faint;
 }
 
 /* Line clamp utility (for browsers that don't support it natively) */
