@@ -5,12 +5,13 @@ import Logo from "./Logo";
 export default function Hero() {
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-blue/20 via-surface-darkest to-primary-yellow/10" />
+      {/* Background gradient — theme-aware */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-100 via-amber-50 to-surface-darkest dark:from-primary-blue/20 dark:via-surface-darkest dark:to-primary-yellow/10" />
 
       {/* Decorative blurred circles */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary-blue/10 rounded-full blur-3xl animate-pulse-slow" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl animate-pulse-slow" />
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary-blue/15 dark:bg-primary-blue/10 rounded-full blur-3xl animate-pulse-slow" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary-yellow/15 dark:bg-primary-yellow/10 rounded-full blur-3xl animate-pulse-slow" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/30 dark:bg-transparent rounded-full blur-3xl" />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-8">
         {/* Floating Logo */}
@@ -70,12 +71,12 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Bottom wave */}
+      {/* Bottom wave — theme-aware */}
       <div className="absolute bottom-0 left-0 right-0">
         <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
           <path
             d="M0 40L48 36C96 32 192 24 288 28C384 32 480 48 576 52C672 56 768 48 864 40C960 32 1056 24 1152 28C1248 32 1344 48 1392 56L1440 64V80H0V40Z"
-            fill="#0D0D0F"
+            className="fill-surface-darkest"
           />
         </svg>
       </div>

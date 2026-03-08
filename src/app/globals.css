@@ -6,16 +6,18 @@
 
 /* ===== Theme Variables ===== */
 :root {
-  /* Light mode — cream/pearl + blue & yellow pastel */
-  --surface-darkest: 247 244 239;
-  --surface: 239 235 228;
+  /* Light mode — cream/pearl with blue & yellow pastel accents */
+  --surface-darkest: 245 241 235;
+  --surface: 237 232 224;
   --surface-card: 255 255 255;
-  --surface-hover: 229 224 215;
-  --surface-border: 218 212 202;
+  --surface-hover: 228 222 212;
+  --surface-border: 212 205 194;
   --foreground: 28 25 23;
-  --foreground-secondary: 68 64 60;
-  --foreground-muted: 120 113 108;
-  --foreground-faint: 161 155 150;
+  --foreground-secondary: 58 54 50;
+  --foreground-muted: 105 98 92;
+  --foreground-faint: 150 143 136;
+  --hero-gradient-from: 219 234 254;  /* blue-100 */
+  --hero-gradient-to: 254 249 195;    /* yellow-100 */
 }
 
 .dark {
@@ -28,6 +30,8 @@
   --foreground-secondary: 209 213 219;
   --foreground-muted: 156 163 175;
   --foreground-faint: 107 114 128;
+  --hero-gradient-from: 30 64 175;
+  --hero-gradient-to: 120 80 0;
 }
 
 html {
@@ -36,6 +40,16 @@ html {
 
 body {
   @apply bg-surface-darkest text-foreground antialiased;
+}
+
+/* Light mode — card shadows & depth */
+:root .bg-surface-card,
+:root [class*="bg-surface-card"] {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.dark .bg-surface-card,
+.dark [class*="bg-surface-card"] {
+  box-shadow: none;
 }
 
 /* Scrollbar */

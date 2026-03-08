@@ -353,10 +353,15 @@ function MetricsTab({ authHeader }: { authHeader: Record<string, string> }) {
                 key={p.path}
                 className="flex items-center justify-between py-2 border-b border-surface-border last:border-0"
               >
-                <span className="text-sm text-foreground-secondary font-mono">
-                  {p.path}
-                </span>
-                <span className="text-sm font-semibold text-primary-yellow">
+                <div className="min-w-0">
+                  <span className="text-sm text-foreground font-medium">
+                    {p.name}
+                  </span>
+                  <span className="text-xs text-foreground-faint ml-2">
+                    {p.path}
+                  </span>
+                </div>
+                <span className="text-sm font-semibold text-primary-yellow flex-shrink-0">
                   {p.count}
                 </span>
               </div>
@@ -379,10 +384,12 @@ function MetricsTab({ authHeader }: { authHeader: Record<string, string> }) {
                 key={v.videoId}
                 className="flex items-center justify-between py-2 border-b border-surface-border last:border-0"
               >
-                <span className="text-sm text-foreground-secondary font-mono">
-                  {v.videoId}
-                </span>
-                <div className="flex items-center gap-4 text-sm">
+                <div className="min-w-0 flex-1 mr-4">
+                  <span className="text-sm text-foreground font-medium truncate block">
+                    {v.title}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 text-sm flex-shrink-0">
                   <span className="text-foreground-muted">
                     {v.views} views
                   </span>

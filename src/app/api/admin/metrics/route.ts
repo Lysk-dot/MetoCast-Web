@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getEpisodes } from "@/lib/youtube";
+
+const PAGE_NAMES: Record<string, string> = {
+  "/": "Início",
+  "/episodios": "Episódios",
+  "/assistir": "Assistir",
+  "/sobre": "Sobre",
+  "/comunidade": "Comunidade",
+  "/admin": "Painel Admin",
+};
 
 function checkAuth(request: NextRequest): boolean {
   const password = request.headers.get("x-admin-password");
@@ -29,7 +39,11 @@ export async function GET(request: NextRequest) {
           take: 10,
         })
         .then((rows: any[]) =>
-          rows.map((r: any) => ({ path: r.path, count: r._count.path }))
+          rows.map((r: any) => ({
+            path: r.path,
+            name: PAGE_NAMES[r.path] || (r.path.startsWith("/episodio/") ? "Episódio" : r.path),
+            count: r._count.path,
+          }))
         ),
       db.videoView.count(),
       db.videoView
@@ -53,12 +67,24 @@ export async function GET(request: NextRequest) {
     .aggregate({ _sum: { watchSeconds: true } })
     .then((r: any) => Math.round((r._sum.watchSeconds || 0) / 60));
 
+  // Resolve video titles from YouTube RSS
+  let episodes: { videoId: string; title: string }[] = [];
+  try {
+    episodes = await getEpisodes();
+  } catch { /* ignore */ }
+  const titleMap = new Map(episodes.map((e) => [e.videoId, e.title]));
+
+  const topVideos = videoStats.map((v: any) => ({
+    ...v,
+    title: titleMap.get(v.videoId) || v.videoId,
+  }));
+
   return NextResponse.json({
     totalPageViews,
     uniqueSessions,
     topPages,
     totalVideoViews,
     totalWatchMinutes,
-    topVideos: videoStats,
+    topVideos,
   });
 }

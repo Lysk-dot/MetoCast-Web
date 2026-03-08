@@ -41,8 +41,8 @@ export interface VideoView {
 export interface MetricsSummary {
   totalPageViews: number;
   uniqueSessions: number;
-  topPages: { path: string; count: number }[];
+  topPages: { path: string; name: string; count: number }[];
   totalVideoViews: number;
   totalWatchMinutes: number;
-  topVideos: { videoId: string; views: number; minutes: number }[];
+  topVideos: { videoId: string; title: string; views: number; minutes: number }[];
 }

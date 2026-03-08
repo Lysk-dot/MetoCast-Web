@@ -19,7 +19,7 @@ export default function EpisodeCard({ episode }: EpisodeCardProps) {
       : episode.description;
 
   return (
-    <div className="group bg-surface-card border border-surface-border rounded-2xl overflow-hidden hover:border-primary-yellow/30 transition-all duration-300">
+    <div className="group bg-surface-card border border-surface-border rounded-2xl overflow-hidden hover:border-primary-yellow/30 hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-none transition-all duration-300">
       {/* Thumbnail */}
       <Link href={`/episodio/${episode.videoId}`} className="block relative">
         <img
