@@ -633,7 +633,7 @@ function ParticipacoesTab({ authHeader }: { authHeader: Record<string, string> }
             <div className="flex items-center gap-2 text-sm">
               <span className="font-medium text-foreground">{p.nome}</span>
               {p.videoUrl && (
-                <Film size={12} className="text-foreground-faint" title="Tem vídeo" />
+                <span title="Tem vídeo"><Film size={12} className="text-foreground-faint" /></span>
               )}
             </div>
             <p className="text-xs text-foreground-faint">{p.cargo}</p>
