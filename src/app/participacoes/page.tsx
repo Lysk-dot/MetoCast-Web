@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     "Conheça os convidados e participantes que já passaram pelo MetôCast.",
 };
 
+export const dynamic = "force-dynamic";
 export const revalidate = 600;
 
 export default async function ParticipacoesPage() {
