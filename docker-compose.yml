@@ -1,0 +1,71 @@
+# ============================
+# MetôCast - Docker Compose
+# ============================
+# Serviços: Next.js app + PostgreSQL + Nginx + Cloudflare Tunnel
+
+services:
+  # ---- PostgreSQL Database ----
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: metocast
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-metocast_password}
+      POSTGRES_DB: metocast
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metocast"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  # ---- Next.js Application ----
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://metocast:${DB_PASSWORD:-metocast_password}@db:5432/metocast
+      YOUTUBE_CHANNEL_ID: UCnFAxzMvp4ot-uElK_z1qSQ
+      NEXT_PUBLIC_SITE_URL: ${SITE_URL:-https://metocast.example.com}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  # ---- Nginx Reverse Proxy ----
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - app
+    networks:
+      - internal
+
+  # ---- Cloudflare Tunnel ----
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - nginx
+    networks:
+      - internal
+
+volumes:
+  pgdata:
+
+networks:
+  internal:
+    driver: bridge

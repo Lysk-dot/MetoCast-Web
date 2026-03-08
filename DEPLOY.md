@@ -1,303 +1,352 @@
-# 🚀 Documentação de Deploy - MetôCast
+# Documentação de Deploy — MetôCast v2
 
-## 📋 Sumário
+## Sumário
 
 1. [Visão Geral](#visão-geral)
 2. [Arquitetura](#arquitetura)
-3. [Backend - Railway](#backend---railway)
-4. [Frontend - GitHub Pages](#frontend---github-pages)
-5. [URLs e Acessos](#urls-e-acessos)
-6. [Manutenção](#manutenção)
+3. [Pré-requisitos](#pré-requisitos)
+4. [Deploy com Docker](#deploy-com-docker)
+5. [Cloudflare Tunnel](#cloudflare-tunnel)
+6. [Variáveis de Ambiente](#variáveis-de-ambiente)
+7. [Manutenção](#manutenção)
+8. [Desenvolvimento Local](#desenvolvimento-local)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 🎯 Visão Geral
+## Visão Geral
 
-O MetôCast está hospedado em uma arquitetura serverless gratuita:
+O MetôCast roda em um servidor Linux com a seguinte stack:
 
-- **Frontend**: GitHub Pages
-- **Backend**: Railway
-- **Banco de Dados**: PostgreSQL no Railway
+- **Next.js** — Frontend + API (tudo em um)
+- **PostgreSQL** — Banco de dados (comentários e sugestões)
+- **Nginx** — Reverse proxy com rate limiting e compressão
+- **Cloudflare Tunnel** — Exposição segura ao domínio público
+- **Docker Compose** — Orquestração dos containers
+
+Episódios são automaticamente buscados do RSS do YouTube. Vídeos são entregues via embed do YouTube (zero carga no servidor).
 
 ---
 
-## 🏗️ Arquitetura
+## Arquitetura
 
 ```
+Internet
+   │
+   ▼
+Cloudflare (CDN + DNS)
+   │
+   ▼ (Tunnel)
 ┌─────────────────────────────────────────────┐
-│  GitHub Pages (Frontend React)              │
-│  https://lysk-dot.github.io/MetôCast-Web/   │
-└────────────────┬────────────────────────────┘
-                 │
-                 │ HTTPS Requests
-                 │
-                 ▼
-┌─────────────────────────────────────────────┐
-│  Railway (Backend FastAPI)                  │
-│  https://metocast-production.up.railway.app │
-└────────────────┬────────────────────────────┘
-                 │
-                 │ SQL Queries
-                 │
-                 ▼
-┌─────────────────────────────────────────────┐
-│  PostgreSQL Database (Railway)              │
-│  postgres.railway.internal:5432             │
+│  Servidor Linux                              │
+│                                              │
+│  ┌─────────────┐     ┌──────────────────┐   │
+│  │  cloudflared │────▶│     Nginx :80    │   │
+│  │  (tunnel)    │     │  reverse proxy   │   │
+│  └─────────────┘     └───────┬──────────┘   │
+│                              │               │
+│                              ▼               │
+│                     ┌──────────────────┐     │
+│                     │  Next.js :3000   │     │
+│                     │  (app + API)     │     │
+│                     └───────┬──────────┘     │
+│                             │                │
+│                             ▼                │
+│                     ┌──────────────────┐     │
+│                     │  PostgreSQL :5432│     │
+│                     │  (comments, etc) │     │
+│                     └──────────────────┘     │
+│                                              │
+│  Nenhuma porta exposta à internet            │
 └─────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🔧 Backend - Railway
+## Pré-requisitos
 
-### Configuração Inicial
+No servidor Linux:
 
-1. **Projeto criado**: `creative-light` (production)
-2. **Repositório**: GitHub → `MetôCast` (backend Python/FastAPI)
-3. **Banco de dados**: PostgreSQL adicionado ao projeto
+1. **Docker** e **Docker Compose** instalados
+2. **Git** para clonar o repositório
+3. Conta no **Cloudflare** com o domínio configurado
 
-### Variáveis de Ambiente
+---
 
-| Variável | Valor | Descrição |
-|----------|-------|-----------|
-| `DATABASE_URL` | `postgresql://postgres:***@postgres.railway.internal:5432/railway` | Conexão com PostgreSQL |
-| `SECRET_KEY` | `metocast-super-secret-key-2026` | Chave de criptografia JWT |
-| `ALGORITHM` | `HS256` | Algoritmo de hash para JWT |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Tempo de expiração do token |
-| `DEBUG` | `False` | Modo de produção |
-| `ALLOWED_ORIGINS` | `https://lysk-dot.github.io` | CORS - domínios permitidos |
+## Deploy com Docker
 
-### Custom Start Command
+### 1. Clonar o repositório
 
 ```bash
-alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+git clone https://github.com/ByteLair/MetoCast-Web.git
+cd MetoCast-Web
 ```
 
-**O que faz:**
-1. `alembic upgrade head` - Cria/atualiza as tabelas do banco automaticamente
-2. `uvicorn app.main:app` - Inicia o servidor FastAPI
+### 2. Configurar variáveis de ambiente
 
-### Deploy
-
-- **Tipo**: Automático via GitHub
-- **Branch**: `main`
-- **Trigger**: A cada push no repositório
-
----
-
-## 💻 Frontend - GitHub Pages
-
-### Configuração Inicial
-
-1. **Repositório**: `Lysk-dot/MetôCast-Web`
-2. **Deploy**: GitHub Actions (workflow automático)
-3. **Source**: GitHub Actions (configurado em Settings → Pages)
-
-### Alterações no Código
-
-#### 1. API Base URL (`src/services/api.js`)
-
-```javascript
-// Usa Railway em produção, localhost em desenvolvimento
-const API_BASE = import.meta.env.PROD 
-  ? 'https://metocast-production.up.railway.app/api'
-  : 'http://localhost:8000/api';
-```
-
-#### 2. Vite Config (`vite.config.js`)
-
-```javascript
-export default defineConfig({
-  plugins: [react()],
-  base: '/MetôCast-Web/', // Subpath do GitHub Pages
-})
-```
-
-### GitHub Actions Workflow
-
-**Arquivo**: `.github/workflows/deploy.yml`
-
-```yaml
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: ['main']
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - Checkout do código
-      - Setup Node.js 20
-      - npm ci (instalar dependências)
-      - npm run build (gerar build de produção)
-      - Upload artifact
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - Deploy para GitHub Pages
-```
-
-### Deploy
-
-- **Tipo**: Automático via GitHub Actions
-- **Branch**: `main`
-- **Trigger**: A cada push no repositório
-- **Tempo**: ~1-2 minutos
-
----
-
-## 🌐 URLs e Acessos
-
-### Produção
-
-| Serviço | URL | Descrição |
-|---------|-----|-----------|
-| **Frontend** | [https://lysk-dot.github.io/MetôCast-Web/](https://lysk-dot.github.io/MetôCast-Web/) | Site público |
-| **Backend API** | [https://metocast-production.up.railway.app/api](https://metocast-production.up.railway.app/api) | API REST |
-| **API Docs** | [https://metocast-production.up.railway.app/docs](https://metocast-production.up.railway.app/docs) | Swagger UI |
-| **Redoc** | [https://metocast-production.up.railway.app/redoc](https://metocast-production.up.railway.app/redoc) | Documentação alternativa |
-
-### Desenvolvimento
-
-| Serviço | URL | Comando |
-|---------|-----|---------|
-| **Frontend** | http://localhost:5173 | `npm run dev` |
-| **Backend** | http://localhost:8000 | `uvicorn app.main:app --reload` |
-
-### Railway Dashboard
-
-- **URL do Projeto**: [https://railway.app/project/6b5d0bf0-4bfc-49df-a1cb-9daf1de305a5](https://railway.app/project/6b5d0bf0-4bfc-49df-a1cb-9daf1de305a5)
-- **Nome do Projeto**: creative-light
-- **Ambiente**: production
-- **Serviços**:
-  - **MetôCast** (Backend API) - [https://metocast-production.up.railway.app](https://metocast-production.up.railway.app)
-  - **Postgres** (Database) - postgres.railway.internal:5432
-
-### GitHub
-
-- **Frontend Repo**: [https://github.com/Lysk-dot/MetôCast-Web](https://github.com/Lysk-dot/MetôCast-Web)
-- **Backend Repo**: [https://github.com/Lysk-dot/MetôCast](https://github.com/Lysk-dot/MetôCast)
-- **Actions (Deploy)**: [https://github.com/Lysk-dot/MetôCast-Web/actions](https://github.com/Lysk-dot/MetôCast-Web/actions)
-- **Pages Settings**: [https://github.com/Lysk-dot/MetôCast-Web/settings/pages](https://github.com/Lysk-dot/MetôCast-Web/settings/pages)
-
----
-
-## 🔄 Manutenção
-
-### Como fazer deploy de alterações
-
-#### Frontend
-1. Faça as alterações no código
-2. Commit e push para `main`:
-   ```bash
-   git add .
-   git commit -m "feat: sua alteração"
-   git push
-   ```
-3. O GitHub Actions faz deploy automaticamente
-
-#### Backend
-1. Faça as alterações no código do backend
-2. Commit e push para `main` no repositório MetôCast
-3. O Railway faz deploy automaticamente
-
-### Como adicionar novas variáveis de ambiente
-
-1. Acesse Railway → MetôCast → Variables
-2. Clique em "New Variable"
-3. Adicione nome e valor
-4. O Railway faz redeploy automaticamente
-
-### Como rodar migrations
-
-As migrations rodam automaticamente no start command.
-
-Para rodar manualmente no Railway:
-1. MetôCast → Settings → Redeploy
-
-### Como ver logs
-
-**Railway:**
-1. Clique no serviço MetôCast
-2. Aba "Deployments"
-3. Clique no deployment ativo
-4. Veja os logs em tempo real
-
-**GitHub Actions:**
-1. Vá em Actions
-2. Clique no workflow
-3. Expanda os steps para ver logs
-
-### Como configurar domínio customizado
-
-#### No GitHub Pages:
-1. Acesse: [Settings → Pages → Custom domain](https://github.com/Lysk-dot/MetôCast-Web/settings/pages)
-2. Adicione seu domínio (ex: `metocast.org`)
-3. Configure DNS no seu provedor:
-   ```
-   Type: CNAME
-   Name: www (ou @)
-   Value: lysk-dot.github.io
-   ```
-4. **Importante**: Após configurar o domínio customizado, atualize o `base` no `vite.config.js`:
-   ```javascript
-   base: '/', // Mude de '/MetôCast-Web/' para '/'
-   ```
-
-#### No Railway:
-1. Acesse: [MetôCast → Settings → Networking](https://railway.app/project/6b5d0bf0-4bfc-49df-a1cb-9daf1de305a5)
-2. Custom Domain → Add domain
-3. Configure DNS conforme instruções do Railway
-
-#### Atualizar CORS:
-No Railway, adicione o novo domínio em `ALLOWED_ORIGINS`:
 ```bash
-ALLOWED_ORIGINS=https://lysk-dot.github.io,https://metocast.org,https://www.metocast.org
+cp .env.docker.example .env
+nano .env
+```
+
+Preencha:
+
+```env
+DB_PASSWORD=uma_senha_forte_aqui
+SITE_URL=https://seu-dominio.com
+CLOUDFLARE_TUNNEL_TOKEN=seu_token_aqui
+```
+
+### 3. Subir todos os containers
+
+```bash
+docker compose up -d --build
+```
+
+Isso inicia:
+- **db** — PostgreSQL
+- **app** — Next.js (build automático)
+- **nginx** — Reverse proxy
+- **tunnel** — Cloudflare Tunnel
+
+### 4. Criar as tabelas do banco
+
+Na primeira vez (ou após mudanças no schema):
+
+```bash
+docker compose exec app npx prisma db push
+```
+
+### 5. Verificar se está tudo rodando
+
+```bash
+docker compose ps
+docker compose logs -f app
 ```
 
 ---
 
-## 📊 Custos
+## Cloudflare Tunnel
 
-### Tier Gratuito
+### Criar o Tunnel
 
-| Serviço | Plano | Limites |
-|---------|-------|---------|
-| GitHub Pages | Free | 100GB bandwidth/mês |
-| Railway | Trial | $5/mês em créditos gratuitos |
-| PostgreSQL (Railway) | Incluído | Compartilha os créditos |
+1. Acesse [Cloudflare Zero Trust](https://one.dash.cloudflare.com/)
+2. Vá em **Network → Tunnels**
+3. Clique em **Create a tunnel**
+4. Escolha **Cloudflared** como conector
+5. Dê um nome (ex: `metocast`)
+6. Copie o **token** e coloque em `.env`
 
-**Observação**: O Railway oferece 30 dias de trial com $5 de crédito. Após isso, você pode:
-- Adicionar cartão para continuar no plano Hobby ($5/mês)
-- Migrar para outra plataforma (Render, Fly.io, etc.)
+### Configurar a rota pública
+
+No painel do tunnel, adicione:
+
+| Campo | Valor |
+|-------|-------|
+| **Public hostname** | `seu-dominio.com` |
+| **Service type** | HTTP |
+| **URL** | `nginx:80` |
+
+> O tunnel se conecta diretamente ao container Nginx via rede interna Docker. Nenhuma porta é exposta ao servidor.
+
+### DNS
+
+O Cloudflare cria automaticamente um registro CNAME para o domínio apontando para o tunnel. Verifique que o proxy (nuvem laranja) está ativado.
 
 ---
 
-## 🐛 Troubleshooting
+## Variáveis de Ambiente
 
-### Frontend não carrega
-- Verifique se o GitHub Actions rodou com sucesso
-- Confirme que GitHub Pages está ativado
-- Verifique o `base` no vite.config.js
+| Variável | Descrição | Exemplo |
+|----------|-----------|---------|
+| `DB_PASSWORD` | Senha do PostgreSQL | `senha_forte_123` |
+| `SITE_URL` | URL pública do site | `https://metocast.com.br` |
+| `CLOUDFLARE_TUNNEL_TOKEN` | Token do tunnel | `eyJ...` |
 
-### API não responde
-- Verifique se o deploy do Railway foi bem-sucedido
-- Confira os logs no Railway
-- Teste: https://metocast-production.up.railway.app/docs
+---
 
-### Erro de CORS
-- Adicione o domínio em `ALLOWED_ORIGINS` no Railway
-- Faça redeploy após alterar
+## Manutenção
+
+### Atualizar o site
+
+```bash
+cd MetoCast-Web
+git pull origin Stable
+docker compose up -d --build
+```
+
+### Ver logs
+
+```bash
+# Todos os serviços
+docker compose logs -f
+
+# Apenas a aplicação
+docker compose logs -f app
+
+# Apenas erros do Nginx
+docker compose logs -f nginx
+```
+
+### Backup do banco de dados
+
+```bash
+docker compose exec db pg_dump -U metocast metocast > backup_$(date +%Y%m%d).sql
+```
+
+### Restaurar backup
+
+```bash
+cat backup_20260308.sql | docker compose exec -T db psql -U metocast metocast
+```
+
+### Atualizar schema do banco
+
+Após alterar `prisma/schema.prisma`:
+
+```bash
+docker compose exec app npx prisma db push
+```
+
+### Reiniciar serviço específico
+
+```bash
+docker compose restart app
+docker compose restart nginx
+```
+
+---
+
+## Desenvolvimento Local
+
+### Sem Docker
+
+```bash
+# 1. Instalar dependências
+npm install
+
+# 2. Subir um PostgreSQL local (ou usar Docker só para o banco)
+docker run -d --name metocast-db \
+  -e POSTGRES_USER=metocast \
+  -e POSTGRES_PASSWORD=metocast_password \
+  -e POSTGRES_DB=metocast \
+  -p 5432:5432 \
+  postgres:16-alpine
+
+# 3. Configurar variáveis
+cp .env.example .env.local
+
+# 4. Criar tabelas
+npx prisma db push
+
+# 5. Rodar em desenvolvimento
+npm run dev
+```
+
+Acesse: [http://localhost:3000](http://localhost:3000)
+
+### Com Docker (completo)
+
+```bash
+docker compose up -d --build
+```
+
+Acesse: [http://localhost:8080](http://localhost:8080)
+
+---
+
+## Troubleshooting
+
+### Site não carrega
+
+1. Verifique os containers: `docker compose ps`
+2. Veja os logs: `docker compose logs -f app`
+3. Confirme que o tunnel está conectado: `docker compose logs tunnel`
+
+### Erro de banco de dados
+
+1. Verifique se o PostgreSQL está rodando: `docker compose ps db`
+2. Teste a conexão: `docker compose exec db psql -U metocast -d metocast -c "SELECT 1"`
+3. Se as tabelas não existem: `docker compose exec app npx prisma db push`
+
+### Episódios não aparecem
+
+1. O feed RSS do YouTube pode estar temporariamente indisponível
+2. Os episódios são cacheados por 10 minutos — aguarde e recarregue
+3. Verifique nos logs: `docker compose logs app | grep RSS`
+
+### Tunnel desconectado
+
+1. Veja os logs: `docker compose logs tunnel`
+2. Verifique o token em `.env`
+3. Reinicie: `docker compose restart tunnel`
+
+### Como adicionar mais episódios
+
+Não é necessário fazer nada. Basta publicar no YouTube e o site atualiza automaticamente em até 10 minutos.
+
+---
+
+## Estrutura do Projeto
+
+```
+MetoCast-Web/
+├── prisma/
+│   └── schema.prisma          # Schema do banco (Prisma)
+├── public/
+│   └── images/                # Assets estáticos (logo, etc)
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx         # Layout raiz (navbar + footer)
+│   │   ├── page.tsx           # / (landing page)
+│   │   ├── not-found.tsx      # 404
+│   │   ├── globals.css        # Estilos globais
+│   │   ├── episodios/
+│   │   │   └── page.tsx       # /episodios (lista paginada)
+│   │   ├── episodio/
+│   │   │   └── [videoId]/
+│   │   │       └── page.tsx   # /episodio/[videoId] (detalhe)
+│   │   ├── assistir/
+│   │   │   └── page.tsx       # /assistir (players)
+│   │   ├── sobre/
+│   │   │   └── page.tsx       # /sobre
+│   │   ├── comunidade/
+│   │   │   └── page.tsx       # /comunidade
+│   │   └── api/
+│   │       ├── comments/
+│   │       │   └── route.ts   # GET/POST comentários
+│   │       └── suggestions/
+│   │           ├── route.ts   # GET/POST sugestões
+│   │           └── [id]/
+│   │               └── vote/
+│   │                   └── route.ts  # POST voto
+│   ├── components/
+│   │   ├── Navbar.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Hero.tsx
+│   │   ├── Logo.tsx
+│   │   ├── EpisodeCard.tsx
+│   │   ├── YouTubePlayer.tsx
+│   │   ├── Pagination.tsx
+│   │   ├── CommentSection.tsx
+│   │   ├── SuggestionForm.tsx
+│   │   └── SuggestionList.tsx
+│   ├── lib/
+│   │   ├── prisma.ts          # Singleton do Prisma Client
+│   │   └── youtube.ts         # Parser do RSS feed
+│   └── types/
+│       └── index.ts           # Tipagens TypeScript
+├── nginx/
+│   └── nginx.conf             # Configuração Nginx
+├── docker-compose.yml
+├── Dockerfile
+├── .env.docker.example
+├── .env.example
+├── next.config.js
+├── tailwind.config.js
+├── tsconfig.json
+└── package.json
+```
 
 ### Banco de dados vazio
 - Verifique se o start command está correto

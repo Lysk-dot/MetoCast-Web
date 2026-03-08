@@ -1,167 +1,87 @@
-# 🎙️ MetôCast Web
+# MetôCast Web
 
-Site oficial do **MetôCast** - Podcast dos estudantes da Universidade Metodista.
+Site oficial do **MetôCast** — Podcast dos estudantes da Universidade Metodista.
 
-## 📋 Sobre o Projeto
+## Sobre
 
-O MetôCast Web é a plataforma web do podcast MetôCast, desenvolvida para divulgar episódios, conectar com a comunidade e gerenciar conteúdo através de um painel administrativo.
+Podcast criado por estudantes da Universidade Metodista para discutir educação, vida universitária, cultura e temas sociais relevantes.
 
-### ✨ Funcionalidades
+Os episódios são automaticamente importados do canal no YouTube via RSS feed. Vídeos são entregues pelo embed do YouTube (zero carga no servidor).
 
-**Página Pública:**
-- 🏠 Landing page com apresentação do podcast
-- 🎧 Listagem de episódios com thumbnails do Spotify
-- 🔗 Links para Spotify, YouTube e Instagram
-- 👥 Seção sobre a equipe
-- 📱 Design responsivo (mobile-first)
+## Stack
 
-**Painel Administrativo:**
-- 🔐 Autenticação JWT
-- 📝 CRUD de episódios (criar, editar, excluir, publicar)
-- 🔗 Gerenciamento de links oficiais
-- 🖼️ Suporte a imagens de capa dos episódios
+- **Next.js 14** — Frontend + API (App Router)
+- **PostgreSQL** — Banco de dados (comentários e sugestões)
+- **Prisma** — ORM
+- **Tailwind CSS** — Estilização
+- **Nginx** — Reverse proxy
+- **Cloudflare Tunnel** — Acesso público seguro
+- **Docker Compose** — Orquestração
 
-## 🛠️ Tecnologias
+## Páginas
 
-- **Frontend:** React 18 + Vite
-- **Estilização:** Tailwind CSS v4 + Inline Styles
-- **Roteamento:** React Router DOM v6
-- **HTTP Client:** Axios
-- **Ícones:** Lucide React
-- **Notificações:** React Hot Toast
-- **Backend:** FastAPI + PostgreSQL (container Docker separado)
+| Rota | Descrição |
+|------|-----------|
+| `/` | Landing page com últimos episódios |
+| `/episodios` | Lista paginada de todos os episódios |
+| `/episodio/[videoId]` | Página individual do episódio |
+| `/assistir` | Todos os episódios com player embutido |
+| `/sobre` | Sobre o projeto |
+| `/comunidade` | Sugestões de temas da comunidade |
 
-## 🚀 Instalação
+## Início Rápido
 
-### Pré-requisitos
+### Desenvolvimento Local
 
-- Node.js 18+
-- npm ou yarn
-- Docker (para o backend)
-
-### Configuração
-
-1. **Clone o repositório:**
 ```bash
-git clone https://github.com/seu-usuario/MetoCast-Web.git
-cd MetôCast-Web
-```
-
-2. **Instale as dependências:**
-```bash
+# 1. Instalar dependências
 npm install
-```
 
-3. **Inicie o servidor de desenvolvimento:**
-```bash
+# 2. Subir PostgreSQL local
+docker run -d --name metocast-db \
+  -e POSTGRES_USER=metocast \
+  -e POSTGRES_PASSWORD=metocast_password \
+  -e POSTGRES_DB=metocast \
+  -p 5432:5432 \
+  postgres:16-alpine
+
+# 3. Configurar variáveis
+cp .env.example .env.local
+
+# 4. Criar tabelas do banco
+npx prisma db push
+
+# 5. Rodar em desenvolvimento
 npm run dev
 ```
 
-4. **Acesse:** http://localhost:5173
+Acesse: http://localhost:3000
 
-### Backend
-
-O frontend se conecta ao backend MetôCast que roda em Docker:
+### Deploy em Produção
 
 ```bash
-cd ../MetôCast
-docker compose up -d
+# 1. Configurar variáveis
+cp .env.docker.example .env
+
+# 2. Subir com Docker
+docker compose up -d --build
+
+# 3. Criar tabelas (primeira vez)
+docker compose exec app npx prisma db push
 ```
 
-API disponível em: http://localhost:8000
+Documentação completa de deploy em [DEPLOY.md](DEPLOY.md).
 
-## 📁 Estrutura do Projeto
+## Links Oficiais
 
-```
-MetôCast-Web/
-├── public/
-│   └── images/
-│       └── logo-metocast.png    # Logo do podcast
-├── src/
-│   ├── components/
-│   │   ├── About.jsx            # Seção "Sobre"
-│   │   ├── EpisodeCard.jsx      # Card de episódio
-│   │   ├── EpisodeGrid.jsx      # Grid de episódios
-│   │   ├── Footer.jsx           # Rodapé
-│   │   ├── Hero.jsx             # Seção principal
-│   │   ├── Navbar.jsx           # Barra de navegação
-│   │   └── Team.jsx             # Seção da equipe
-│   ├── context/
-│   │   └── AuthContext.jsx      # Contexto de autenticação
-│   ├── pages/
-│   │   ├── Home.jsx             # Página inicial
-│   │   ├── Login.jsx            # Página de login
-│   │   └── AdminPanel.jsx       # Painel administrativo
-│   ├── services/
-│   │   ├── api.js               # Cliente HTTP
-│   │   └── auth.js              # Serviços de autenticação
-│   ├── App.jsx                  # Componente principal
-│   ├── main.jsx                 # Ponto de entrada
-│   └── index.css                # Estilos globais
-├── index.html
-├── package.json
-├── vite.config.js
-├── tailwind.config.js
-└── postcss.config.js
-```
+- [Spotify](https://open.spotify.com/show/1QpRW5ISZzqqJyd3orYxsy)
+- [YouTube](https://www.youtube.com/@MetoCast)
+- [Instagram](https://www.instagram.com/meto_cast/)
 
-## 🔐 Acesso ao Painel Admin
+## Licença
 
-- **URL:** http://localhost:5173/login
-- **Email:** admin@metocast.com
-- **Senha:** admin123
-
-> ⚠️ Altere a senha em produção!
-
-## 🎨 Paleta de Cores
-
-| Cor | Hex | Uso |
-|-----|-----|-----|
-| Amarelo | #FFC107 | Cor primária, destaques |
-| Azul | #1E88E5 | Cor secundária, links |
-| Azul Escuro | #1B4B8A | Backgrounds, logo |
-| Roxo | #6C5CE7 | Acentos |
-| Escuro | #0D0D0F | Background principal |
-| Superfície | #1A1A1F | Cards, seções |
-
-## 📱 Integração com App Mobile
-
-O site compartilha o mesmo backend com o app mobile Flutter (MetôCast-App), garantindo sincronização de dados.
-
-## 📡 API Endpoints
-
-### Públicos
-- GET /api/episodes - Lista episódios publicados
-- GET /api/links - Lista links oficiais
-
-### Autenticados (Admin)
-- POST /api/auth/login - Login
-- GET /api/admin/episodes - Lista todos episódios
-- POST /api/admin/episodes - Criar episódio
-- PUT /api/admin/episodes/:id - Atualizar episódio
-- DELETE /api/admin/episodes/:id - Excluir episódio
-
-## 🚀 Deploy
-
-### Build de Produção
-
-```bash
-npm run build
-```
-
-## 📞 Links Oficiais
-
-- 🎧 [Spotify](https://open.spotify.com/show/1QpRW5ISZzqqJyd3orYxsy)
-- 📺 [YouTube](https://www.youtube.com/@MetoCast)
-- 📸 [Instagram](https://www.instagram.com/meto_cast/)
-
-## 📄 Licença
-
-Este projeto é de uso interno da Universidade Metodista.
+Projeto de uso interno da Universidade Metodista.
 
 ---
 
-Feito com ❤️ pela equipe MetôCast
-# Test
-
-test
+Feito pela equipe MetôCast

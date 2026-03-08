@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  videoId   String   @map("video_id")
+  author    String   @db.VarChar(100)
+  message   String   @db.VarChar(2000)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([videoId])
+  @@map("comments")
+}
+
+model Suggestion {
+  id          Int      @id @default(autoincrement())
+  author      String   @db.VarChar(100)
+  title       String   @db.VarChar(200)
+  description String   @db.VarChar(2000)
+  votes       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("suggestions")
+}
