@@ -19,6 +19,11 @@ jobs:
         run: |
           cp /home/felipe/.env.metocast .env
       
+      - name: Clean up Docker disk space
+        run: |
+          docker system prune -af || true
+          docker builder prune -af || true
+
       - name: Deploy with Docker Compose
         run: |
           docker compose down --remove-orphans || true
