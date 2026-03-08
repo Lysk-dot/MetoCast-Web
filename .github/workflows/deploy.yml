@@ -11,28 +11,18 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: Stable
       
-      - name: Pull latest changes
-        run: |
-          cd /home/github-runner/repos/MetoCast-Web
-          git pull origin Stable
-      
       - name: Install Node.js dependencies
-        run: |
-          cd /home/github-runner/repos/MetoCast-Web
-          npm ci
+        run: npm ci
       
       - name: Build frontend
-        run: |
-          cd /home/github-runner/repos/MetoCast-Web
-          npm run build
+        run: npm run build
       
       - name: Deploy to Nginx
         run: |
-          cd /home/github-runner/repos/MetoCast-Web
           rm -rf /var/www/bytelair.pro/*
           cp -r dist/* /var/www/bytelair.pro/
           chown -R www-data:www-data /var/www/bytelair.pro/
