@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  pageExtensions: ['tsx', 'ts'],
   images: {
     remotePatterns: [
       {
