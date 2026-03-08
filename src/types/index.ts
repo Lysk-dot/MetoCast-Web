@@ -46,3 +46,15 @@ export interface MetricsSummary {
   totalWatchMinutes: number;
   topVideos: { videoId: string; title: string; views: number; minutes: number }[];
 }
+
+export interface Participacao {
+  id: number;
+  nome: string;
+  cargo: string;
+  episodio: string;
+  videoId: string | null;
+  data: string;
+  fotoUrl: string | null;
+  videoUrl: string | null;
+  createdAt: string;
+}

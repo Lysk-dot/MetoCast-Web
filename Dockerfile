@@ -39,6 +39,9 @@ RUN adduser --system --uid 1001 nextjs
 # Copy public assets
 COPY --from=builder /app/public ./public
 
+# Create uploads directory with correct ownership (mounted as volume in production)
+RUN mkdir -p ./public/uploads/participacoes && chown -R nextjs:nodejs ./public/uploads
+
 # Copy Next.js standalone output
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static

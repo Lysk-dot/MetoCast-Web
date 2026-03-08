@@ -23,6 +23,7 @@ const SOCIAL_LINKS = [
 const SITE_LINKS = [
   { href: "/episodios", label: "Episódios" },
   { href: "/assistir", label: "Assistir" },
+  { href: "/participacoes", label: "Participações" },
   { href: "/sobre", label: "Sobre" },
   { href: "/comunidade", label: "Comunidade" },
 ];

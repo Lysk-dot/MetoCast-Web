@@ -33,6 +33,8 @@ services:
       YOUTUBE_CHANNEL_ID: UCnFAxzMvp4ot-uElK_z1qSQ
       NEXT_PUBLIC_SITE_URL: ${SITE_URL:-https://metocast.example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    volumes:
+      - uploads:/app/public/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -54,6 +56,7 @@ services:
 
 volumes:
   pgdata:
+  uploads:
 
 networks:
   internal:

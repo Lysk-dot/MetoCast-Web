@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: "/", label: "Início" },
   { href: "/episodios", label: "Episódios" },
   { href: "/assistir", label: "Assistir" },
+  { href: "/participacoes", label: "Participações" },
   { href: "/sobre", label: "Sobre" },
   { href: "/comunidade", label: "Comunidade" },
 ];

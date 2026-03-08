@@ -28,3 +28,6 @@ Thumbs.db
 
 # Next.js
 next-env.d.ts
+
+# Uploaded media files
+public/uploads/

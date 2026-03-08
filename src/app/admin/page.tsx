@@ -12,10 +12,18 @@ import {
   Users,
   Video,
   LogIn,
+  UserPlus,
+  Pencil,
+  Upload,
+  Image,
+  Film,
+  X,
+  Calendar,
+  ExternalLink,
 } from "lucide-react";
-import type { Comment, Suggestion, MetricsSummary } from "@/types";
+import type { Comment, Suggestion, MetricsSummary, Participacao } from "@/types";
 
-type Tab = "comments" | "suggestions" | "metrics";
+type Tab = "comments" | "suggestions" | "metrics" | "participacoes";
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
@@ -123,6 +131,7 @@ export default function AdminPage() {
         {([
           { id: "comments" as Tab, label: "Comentários", icon: MessageCircle },
           { id: "suggestions" as Tab, label: "Sugestões", icon: Lightbulb },
+          { id: "participacoes" as Tab, label: "Participações", icon: UserPlus },
           { id: "metrics" as Tab, label: "Métricas", icon: BarChart3 },
         ]).map((t) => (
           <button
@@ -142,6 +151,7 @@ export default function AdminPage() {
 
       {tab === "comments" && <CommentsTab authHeader={authHeader} />}
       {tab === "suggestions" && <SuggestionsTab authHeader={authHeader} />}
+      {tab === "participacoes" && <ParticipacoesTab authHeader={authHeader} />}
       {tab === "metrics" && <MetricsTab authHeader={authHeader} />}
     </div>
   );
@@ -288,6 +298,387 @@ function SuggestionsTab({
           >
             <Trash2 size={16} />
           </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ===== Participações Tab ===== */
+function ParticipacoesTab({ authHeader }: { authHeader: Record<string, string> }) {
+  const [items, setItems] = useState<Participacao[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<Participacao | null>(null);
+  const [deleting, setDeleting] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  // Form fields
+  const [nome, setNome] = useState("");
+  const [cargo, setCargo] = useState("");
+  const [episodio, setEpisodio] = useState("");
+  const [videoId, setVideoId] = useState("");
+  const [data, setData] = useState("");
+  const [fotoUrl, setFotoUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+
+  const fetchItems = useCallback(async () => {
+    const res = await fetch("/api/admin/participacoes", { headers: authHeader });
+    if (res.ok) setItems(await res.json());
+  }, [authHeader]);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
+
+  function resetForm() {
+    setNome("");
+    setCargo("");
+    setEpisodio("");
+    setVideoId("");
+    setData("");
+    setFotoUrl("");
+    setVideoUrl("");
+    setEditing(null);
+    setShowForm(false);
+  }
+
+  function openEdit(p: Participacao) {
+    setNome(p.nome);
+    setCargo(p.cargo);
+    setEpisodio(p.episodio);
+    setVideoId(p.videoId || "");
+    setData(p.data);
+    setFotoUrl(p.fotoUrl || "");
+    setVideoUrl(p.videoUrl || "");
+    setEditing(p);
+    setShowForm(true);
+  }
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>, type: "foto" | "video") {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+
+    const form = new FormData();
+    form.append("file", file);
+
+    const res = await fetch("/api/admin/upload", {
+      method: "POST",
+      headers: authHeader,
+      body: form,
+    });
+
+    if (res.ok) {
+      const { url } = await res.json();
+      if (type === "foto") setFotoUrl(url);
+      else setVideoUrl(url);
+    } else {
+      const err = await res.json().catch(() => ({ error: "Erro no upload." }));
+      alert(err.error);
+    }
+    setUploading(false);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const payload = {
+      ...(editing ? { id: editing.id } : {}),
+      nome,
+      cargo,
+      episodio,
+      videoId: videoId || undefined,
+      data,
+      fotoUrl: fotoUrl || undefined,
+      videoUrl: videoUrl || undefined,
+    };
+
+    const res = await fetch("/api/admin/participacoes", {
+      method: editing ? "PUT" : "POST",
+      headers: { ...authHeader, "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      resetForm();
+      fetchItems();
+    } else {
+      const err = await res.json().catch(() => ({ error: "Erro ao salvar." }));
+      alert(err.error);
+    }
+  }
+
+  async function handleDelete(id: number) {
+    if (!confirm("Tem certeza que deseja excluir esta participação?")) return;
+    setDeleting(id);
+    await fetch(`/api/admin/participacoes?id=${id}`, {
+      method: "DELETE",
+      headers: authHeader,
+    });
+    setItems((prev) => prev.filter((p) => p.id !== id));
+    setDeleting(null);
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <p className="text-foreground-muted text-sm">
+          {items.length} participação(ões) no total
+        </p>
+        <button
+          onClick={() => {
+            resetForm();
+            setShowForm(true);
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-yellow text-gray-900 font-semibold rounded-lg hover:brightness-110 transition-all text-sm"
+        >
+          <UserPlus size={16} />
+          Nova participação
+        </button>
+      </div>
+
+      {/* Form Modal */}
+      {showForm && (
+        <div className="bg-surface-card border border-surface-border rounded-xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-heading font-semibold text-foreground">
+              {editing ? "Editar participação" : "Nova participação"}
+            </h3>
+            <button onClick={resetForm} className="text-foreground-muted hover:text-foreground">
+              <X size={20} />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-foreground-muted mb-1">Nome *</label>
+                <input
+                  type="text"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  required
+                  maxLength={200}
+                  placeholder="Ex: Profª Dra. Alessandra Zamboni"
+                  className="w-full px-3 py-2 bg-surface rounded-lg border border-surface-border text-foreground text-sm placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-foreground-muted mb-1">Cargo *</label>
+                <input
+                  type="text"
+                  value={cargo}
+                  onChange={(e) => setCargo(e.target.value)}
+                  required
+                  maxLength={300}
+                  placeholder="Ex: Professora — Universidade Metodista"
+                  className="w-full px-3 py-2 bg-surface rounded-lg border border-surface-border text-foreground text-sm placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-foreground-muted mb-1">Episódio *</label>
+                <input
+                  type="text"
+                  value={episodio}
+                  onChange={(e) => setEpisodio(e.target.value)}
+                  required
+                  maxLength={300}
+                  placeholder="Ex: EP.09 — Desvendando a OAB"
+                  className="w-full px-3 py-2 bg-surface rounded-lg border border-surface-border text-foreground text-sm placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-foreground-muted mb-1">Data *</label>
+                <input
+                  type="date"
+                  value={data}
+                  onChange={(e) => setData(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 bg-surface rounded-lg border border-surface-border text-foreground text-sm focus:outline-none focus:border-primary-yellow/50"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm text-foreground-muted mb-1">ID do Vídeo (YouTube, opcional)</label>
+              <input
+                type="text"
+                value={videoId}
+                onChange={(e) => setVideoId(e.target.value)}
+                maxLength={11}
+                placeholder="Ex: dQw4w9WgXcQ"
+                className="w-full px-3 py-2 bg-surface rounded-lg border border-surface-border text-foreground text-sm placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50"
+              />
+            </div>
+
+            {/* Photo upload */}
+            <div>
+              <label className="block text-sm text-foreground-muted mb-1">
+                <Image size={14} className="inline mr-1" />
+                Foto do participante
+              </label>
+              <div className="flex items-center gap-3">
+                <label className="inline-flex items-center gap-2 px-3 py-2 bg-surface hover:bg-surface-hover border border-surface-border rounded-lg cursor-pointer transition-colors text-sm text-foreground-muted">
+                  <Upload size={14} />
+                  Escolher foto
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={(e) => handleUpload(e, "foto")}
+                    className="hidden"
+                  />
+                </label>
+                {fotoUrl && (
+                  <div className="flex items-center gap-2">
+                    <img src={fotoUrl} alt="Preview" className="w-10 h-10 rounded-lg object-cover" />
+                    <button type="button" onClick={() => setFotoUrl("")} className="text-red-400 hover:text-red-300">
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+                {!fotoUrl && (
+                  <input
+                    type="text"
+                    value={fotoUrl}
+                    onChange={(e) => setFotoUrl(e.target.value)}
+                    placeholder="Ou cole uma URL"
+                    className="flex-1 px-3 py-2 bg-surface rounded-lg border border-surface-border text-foreground text-sm placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Video upload */}
+            <div>
+              <label className="block text-sm text-foreground-muted mb-1">
+                <Film size={14} className="inline mr-1" />
+                Vídeo da participação (opcional)
+              </label>
+              <div className="flex items-center gap-3">
+                <label className="inline-flex items-center gap-2 px-3 py-2 bg-surface hover:bg-surface-hover border border-surface-border rounded-lg cursor-pointer transition-colors text-sm text-foreground-muted">
+                  <Upload size={14} />
+                  Escolher vídeo
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm"
+                    onChange={(e) => handleUpload(e, "video")}
+                    className="hidden"
+                  />
+                </label>
+                {videoUrl && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-foreground-muted truncate max-w-[200px]">{videoUrl}</span>
+                    <button type="button" onClick={() => setVideoUrl("")} className="text-red-400 hover:text-red-300">
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+                {!videoUrl && (
+                  <input
+                    type="text"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="Ou cole uma URL"
+                    className="flex-1 px-3 py-2 bg-surface rounded-lg border border-surface-border text-foreground text-sm placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50"
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={uploading}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-yellow text-gray-900 font-semibold rounded-lg hover:brightness-110 transition-all text-sm disabled:opacity-50"
+              >
+                {editing ? "Salvar alterações" : "Adicionar participação"}
+              </button>
+              <button type="button" onClick={resetForm} className="text-sm text-foreground-muted hover:text-foreground">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* List */}
+      {items.length === 0 && !showForm && (
+        <p className="text-foreground-faint text-center py-8">
+          Nenhuma participação cadastrada ainda.
+        </p>
+      )}
+
+      {items.map((p) => (
+        <div
+          key={p.id}
+          className="bg-surface-card border border-surface-border rounded-xl p-4 flex items-start gap-4"
+        >
+          {/* Photo */}
+          {p.fotoUrl && (
+            <img
+              src={p.fotoUrl}
+              alt={p.nome}
+              className="w-14 h-14 rounded-full object-cover flex-shrink-0"
+            />
+          )}
+          {!p.fotoUrl && (
+            <div className="w-14 h-14 rounded-full bg-primary-yellow/20 flex items-center justify-center flex-shrink-0">
+              <Users size={20} className="text-primary-yellow" />
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0 space-y-1">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-medium text-foreground">{p.nome}</span>
+              {p.videoUrl && (
+                <Film size={12} className="text-foreground-faint" title="Tem vídeo" />
+              )}
+            </div>
+            <p className="text-xs text-foreground-faint">{p.cargo}</p>
+            <div className="flex items-center gap-3 text-xs text-foreground-faint">
+              <span className="flex items-center gap-1">
+                <Calendar size={10} />
+                {new Date(p.data + "T00:00:00").toLocaleDateString("pt-BR")}
+              </span>
+              <span>{p.episodio}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {p.videoId && (
+              <a
+                href={`/episodio/${p.videoId}`}
+                className="p-2 text-foreground-muted hover:text-primary-yellow rounded-lg transition-colors"
+                title="Ver episódio"
+              >
+                <ExternalLink size={14} />
+              </a>
+            )}
+            <button
+              onClick={() => openEdit(p)}
+              className="p-2 text-foreground-muted hover:text-primary-yellow rounded-lg transition-colors"
+              title="Editar"
+            >
+              <Pencil size={14} />
+            </button>
+            <button
+              onClick={() => handleDelete(p.id)}
+              disabled={deleting === p.id}
+              className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors disabled:opacity-50"
+              title="Excluir"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
         </div>
       ))}
     </div>

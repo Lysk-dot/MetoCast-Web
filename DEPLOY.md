@@ -20,7 +20,7 @@
 O MetôCast roda em um servidor Linux auto-hospedado com a seguinte stack:
 
 - **Next.js 14** — Frontend + API (App Router, standalone mode)
-- **PostgreSQL 16** — Banco de dados (comentários e sugestões)
+- **PostgreSQL 16** — Banco de dados (comentários, sugestões, participações)
 - **Nginx** — Reverse proxy com rate limiting e compressão gzip
 - **Cloudflare Tunnel** — Exposição segura ao domínio público (systemd)
 - **Docker Compose** — Orquestração dos containers (db, app, nginx)
@@ -146,9 +146,10 @@ sudo systemctl restart actions.runner.ByteLair.T110ii.service
 DB_PASSWORD=metocast_2026
 SITE_URL=https://metocast.com
 DATABASE_URL=postgresql://metocast:metocast_2026@db:5432/metocast_db
+ADMIN_PASSWORD=sua_senha_admin_aqui
 ```
 
-> **Nota:** Este arquivo é copiado para `.env` no diretório do projeto pelo workflow de deploy. O docker-compose.yml usa interpolação `${DB_PASSWORD}` e `${SITE_URL}`.
+> **Nota:** Este arquivo é copiado para `.env` no diretório do projeto pelo workflow de deploy. O docker-compose.yml usa interpolação `${DB_PASSWORD}`, `${SITE_URL}` e `${ADMIN_PASSWORD}`.
 
 ### Como as variáveis são usadas
 
@@ -157,7 +158,7 @@ DATABASE_URL=postgresql://metocast:metocast_2026@db:5432/metocast_db
 | `DB_PASSWORD` | docker-compose.yml → `POSTGRES_PASSWORD` e `DATABASE_URL` | Senha do PostgreSQL |
 | `SITE_URL` | docker-compose.yml → `NEXT_PUBLIC_SITE_URL` | URL pública do site |
 | `DATABASE_URL` | Prisma CLI (db push no workflow) | Connection string completa |
-
+| `ADMIN_PASSWORD` | docker-compose.yml → `ADMIN_PASSWORD` | Senha do painel admin |
 ### Variáveis injetadas nos containers (via docker-compose.yml)
 
 **Container `db`:**
@@ -169,6 +170,7 @@ DATABASE_URL=postgresql://metocast:metocast_2026@db:5432/metocast_db
 - `DATABASE_URL=postgresql://metocast:${DB_PASSWORD}@db:5432/metocast_db`
 - `YOUTUBE_CHANNEL_ID=UCnFAxzMvp4ot-uElK_z1qSQ`
 - `NEXT_PUBLIC_SITE_URL=${SITE_URL}`
+- `ADMIN_PASSWORD=${ADMIN_PASSWORD}`
 
 ---
 
@@ -185,13 +187,16 @@ DATABASE_URL=postgresql://metocast:metocast_2026@db:5432/metocast_db
 - Stage 2 (builder): `npm run build` (standalone output)
 - Stage 3 (runner): Node 20 Alpine + OpenSSL + sharp
 - Roda como usuário `nextjs` (não-root)
+- Volume persistente: `uploads` (fotos/vídeos de participações)
 - Depende de `db` healthy
 
 **`nginx`** — Nginx Alpine
 - Config em `nginx/nginx.conf`
 - Rate limiting: 10 req/s na API
 - Gzip habilitado
+- Upload máximo: 100MB (para fotos/vídeos de participações)
 - Cache de 1 ano para assets estáticos (`/_next/static/`)
+- Cache de 30 dias para uploads (`/uploads/`)
 - Porta 80 exposta
 
 ### Comandos úteis
@@ -327,6 +332,7 @@ docker run -d --name metocast-db \
 
 # 3. Criar .env.local
 echo 'DATABASE_URL="postgresql://metocast:metocast_password@localhost:5432/metocast_db"' > .env.local
+echo 'ADMIN_PASSWORD=admin123' >> .env.local
 
 # 4. Criar tabelas
 npx prisma db push
@@ -343,6 +349,7 @@ Acesse: http://localhost:3000
 echo 'DB_PASSWORD=metocast_password' > .env
 echo 'SITE_URL=http://localhost' >> .env
 echo 'DATABASE_URL=postgresql://metocast:metocast_password@db:5432/metocast_db' >> .env
+echo 'ADMIN_PASSWORD=admin123' >> .env
 docker compose up -d --build
 ```
 
@@ -401,7 +408,9 @@ MetoCast-Web/
 ├── prisma/
 │   └── schema.prisma              # Schema do banco (Prisma)
 ├── public/
-│   └── images/                    # Assets estáticos (logo, etc)
+│   ├── images/                    # Assets estáticos (logo, etc)
+│   └── uploads/                   # Uploads de participações (volume Docker)
+│       └── participacoes/         # Fotos e vídeos dos convidados
 ├── src/
 │   ├── app/                       # Next.js App Router
 │   │   ├── layout.tsx             # Layout raiz (navbar + footer)
@@ -410,22 +419,30 @@ MetoCast-Web/
 │   │   ├── globals.css            # Estilos globais (Tailwind)
 │   │   ├── episodios/page.tsx     # /episodios (lista paginada)
 │   │   ├── episodio/[videoId]/page.tsx  # /episodio/:id (player + comentários)
-│   │   ├── assistir/page.tsx      # /assistir
+│   │   ├── assistir/page.tsx      # /assistir (player YouTube-style)
+│   │   ├── participacoes/page.tsx # /participacoes (convidados do podcast)
 │   │   ├── sobre/page.tsx         # /sobre
 │   │   ├── comunidade/page.tsx    # /comunidade (sugestões + votação)
 │   │   └── api/                   # API Routes
 │   │       ├── comments/route.ts
-│   │       └── suggestions/route.ts
+│   │       ├── suggestions/route.ts
+│   │       ├── participacoes/route.ts
+│   │       └── admin/
+│   │           ├── auth/route.ts
+│   │           ├── comments/route.ts
+│   │           ├── suggestions/route.ts
+│   │           ├── participacoes/route.ts  # CRUD participações
+│   │           └── upload/route.ts         # Upload de fotos/vídeos
 │   ├── components/                # Componentes React (.tsx)
 │   ├── lib/
 │   │   ├── prisma.ts              # Singleton do Prisma Client
 │   │   └── youtube.ts             # Parser do RSS feed do YouTube
 │   └── types/index.ts             # Tipagens TypeScript
 ├── nginx/
-│   └── nginx.conf                 # Config do Nginx (rate limit, gzip, proxy)
-├── docker-compose.yml             # Orquestração (db + app + nginx)
+│   └── nginx.conf                 # Config do Nginx (rate limit, gzip, proxy, upload 100MB)
+├── docker-compose.yml             # Orquestração (db + app + nginx) + volumes (pgdata, uploads)
 ├── Dockerfile                     # Multi-stage build do Next.js
-├── next.config.js                 # Config Next.js (standalone, pageExtensions)
+├── next.config.js                 # Config Next.js (standalone, pageExtensions, bodySizeLimit)
 ├── tailwind.config.js
 ├── tsconfig.json
 └── package.json
@@ -677,4 +694,4 @@ ALLOWED_ORIGINS=https://lysk-dot.github.io
 
 ---
 
-**Última atualização**: 1 de Fevereiro de 2026
+**Última atualização**: 8 de Março de 2026
