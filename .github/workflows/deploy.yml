@@ -15,19 +15,15 @@ jobs:
         with:
           ref: Stable
       
-      - name: Install Node.js dependencies
-        run: npm ci
-      
-      - name: Build frontend
-        run: npm run build
-      
-      - name: Deploy to Nginx
+      - name: Deploy with Docker Compose
         run: |
-          rm -rf /var/www/bytelair.pro/*
-          cp -r dist/* /var/www/bytelair.pro/
-          chown -R www-data:www-data /var/www/bytelair.pro/
-          chmod -R 755 /var/www/bytelair.pro/
+          sudo docker compose down
+          sudo docker compose build --no-cache app
+          sudo docker compose up -d
       
-      - name: Reload Nginx
+      - name: Wait for app to be ready
+        run: sleep 10
+      
+      - name: Health check
         run: |
-          systemctl reload nginx
+          curl -f http://127.0.0.1:8080 || echo "Warning: health check failed, check logs with: docker compose logs app"

@@ -31,13 +31,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export const revalidate = 600;
-
-export async function generateStaticParams() {
-  const episodes = await getEpisodes();
-  return episodes.slice(0, 20).map((ep) => ({
-    videoId: ep.videoId,
-  }));
-}
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
 
 export default async function EpisodioPage({ params }: Props) {
   const { videoId } = await params;
