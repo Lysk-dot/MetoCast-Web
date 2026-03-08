@@ -15,15 +15,25 @@ jobs:
         with:
           ref: Stable
       
+      - name: Setup environment file
+        run: |
+          if [ ! -f .env ]; then
+            echo "ERROR: .env file not found. Create it first at $(pwd)/.env"
+            exit 1
+          fi
+      
       - name: Deploy with Docker Compose
         run: |
-          docker compose down
+          docker compose down || true
           docker compose build --no-cache app
           docker compose up -d
       
-      - name: Wait for app to be ready
-        run: sleep 10
+      - name: Wait for services
+        run: sleep 15
+      
+      - name: Run database migrations
+        run: docker compose exec -T app npx prisma db push
       
       - name: Health check
         run: |
-          curl -f http://127.0.0.1:8080 || echo "Warning: health check failed, check logs with: docker compose logs app"
+          curl -f http://localhost:80 || echo "Warning: health check failed. Check logs: docker compose logs app"

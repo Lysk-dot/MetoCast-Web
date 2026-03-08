@@ -4,7 +4,7 @@ import { Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import YouTubePlayer from "@/components/YouTubePlayer";
 import CommentSection from "@/components/CommentSection";
-import { getEpisodeById, getEpisodes } from "@/lib/youtube";
+import { getEpisodeById } from "@/lib/youtube";
 
 interface Props {
   params: Promise<{ videoId: string }>;
