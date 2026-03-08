@@ -344,10 +344,10 @@ function ParticipacoesTab({ authHeader }: { authHeader: Record<string, string> }
 
   function openEdit(p: Participacao) {
     setNome(p.nome);
-    setCargo(p.cargo);
-    setEpisodio(p.episodio);
+    setCargo(p.cargo || "");
+    setEpisodio(p.episodio || "");
     setVideoId(p.videoId || "");
-    setData(p.data);
+    setData(p.data || "");
     setFotoUrl(p.fotoUrl || "");
     setVideoUrl(p.videoUrl || "");
     setEditing(p);
