@@ -18,7 +18,7 @@ export default function MetricsTracker() {
   const tracked = useRef<string>("");
 
   useEffect(() => {
-    if (tracked.current === pathname) return;
+    if (!pathname || tracked.current === pathname) return;
     tracked.current = pathname;
 
     const sessionId = getSessionId();
