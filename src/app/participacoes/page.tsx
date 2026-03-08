@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Users, Calendar, ExternalLink, Film } from "lucide-react";
+import Image from "next/image";
+import { Users, Camera, Calendar, ExternalLink, Film } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Participações",
   description:
-    "Conheça os convidados e participantes que já passaram pelo MetôCast.",
+    "Galeria de convidados e participantes que já passaram pelo MetôCast.",
 };
 
 export const dynamic = "force-dynamic";
@@ -15,11 +16,14 @@ export const revalidate = 600;
 export default async function ParticipacoesPage() {
   const participacoes = await prisma.participacao.findMany({
     orderBy: { createdAt: "desc" },
-    take: 100,
+    take: 200,
   });
 
+  const withPhoto = participacoes.filter((p) => p.fotoUrl);
+  const withoutPhoto = participacoes.filter((p) => !p.fotoUrl);
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Header */}
       <div className="mb-10">
         <div className="w-12 h-1 bg-primary-yellow rounded-full mb-4" />
@@ -27,121 +31,138 @@ export default async function ParticipacoesPage() {
           Participações
         </h1>
         <p className="text-foreground-muted">
-          Conheça todos os convidados e participantes que já contribuíram com o
-          MetôCast. Cada episódio traz vozes únicas para discutir educação,
-          cultura e temas relevantes.
+          Galeria de todos os convidados e participantes que já contribuíram com
+          o MetôCast.
         </p>
       </div>
 
       {/* Stats */}
       {participacoes.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
-          <div className="bg-surface-card border border-surface-border rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-primary-yellow">
-              {participacoes.length}
-            </p>
-            <p className="text-xs text-foreground-muted mt-1">Convidados</p>
-          </div>
-          <div className="bg-surface-card border border-surface-border rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-primary-yellow">
-              {new Set(participacoes.map((p) => p.episodio)).size}
-            </p>
-            <p className="text-xs text-foreground-muted mt-1">Episódios</p>
-          </div>
-          <div className="col-span-2 sm:col-span-1 bg-surface-card border border-surface-border rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-primary-yellow">UMesp</p>
-            <p className="text-xs text-foreground-muted mt-1">Universidade</p>
-          </div>
+        <div className="flex flex-wrap gap-6 mb-10 text-sm text-foreground-muted">
+          <span className="inline-flex items-center gap-2">
+            <Users size={16} className="text-primary-yellow" />
+            <strong className="text-foreground">{participacoes.length}</strong> participantes
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <Camera size={16} className="text-primary-yellow" />
+            <strong className="text-foreground">{withPhoto.length}</strong> fotos
+          </span>
+          {new Set(participacoes.map((p) => p.episodio).filter(Boolean)).size > 0 && (
+            <span className="inline-flex items-center gap-2">
+              <Film size={16} className="text-primary-yellow" />
+              <strong className="text-foreground">
+                {new Set(participacoes.map((p) => p.episodio).filter(Boolean)).size}
+              </strong> episódios
+            </span>
+          )}
         </div>
       )}
 
-      {/* Participações List */}
-      {participacoes.length === 0 ? (
-        <p className="text-gray-500 text-center py-16">
-          Nenhuma participação registrada ainda.
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {participacoes.map((participacao) => {
-            const date = new Date(
-              participacao.data + "T00:00:00"
-            ).toLocaleDateString("pt-BR", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            });
+      {/* Empty State */}
+      {participacoes.length === 0 && (
+        <div className="text-center py-20">
+          <Camera size={48} className="mx-auto text-foreground-faint mb-4" />
+          <p className="text-foreground-muted">Nenhuma participação registrada ainda.</p>
+        </div>
+      )}
 
-            return (
-              <div
-                key={participacao.id}
-                className="group bg-surface-card border border-surface-border rounded-2xl p-5 hover:border-primary-yellow/30 transition-all duration-300"
-              >
-                <div className="flex items-start gap-4">
-                  {/* Avatar / Photo */}
-                  {participacao.fotoUrl ? (
-                    <img
-                      src={participacao.fotoUrl}
-                      alt={participacao.nome}
-                      className="flex-shrink-0 w-14 h-14 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex-shrink-0 w-14 h-14 rounded-full bg-primary-yellow/20 flex items-center justify-center">
-                      <Users size={22} className="text-primary-yellow" />
-                    </div>
-                  )}
+      {/* Photo Album Grid */}
+      {withPhoto.length > 0 && (
+        <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4 mb-12">
+          {withPhoto.map((p) => (
+            <div
+              key={p.id}
+              className="group break-inside-avoid bg-surface-card border border-surface-border rounded-2xl overflow-hidden hover:border-primary-yellow/40 transition-all duration-300"
+            >
+              {/* Photo */}
+              <div className="relative w-full aspect-[3/4] sm:aspect-auto sm:h-auto">
+                <img
+                  src={p.fotoUrl!}
+                  alt={p.nome}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-heading font-semibold text-foreground group-hover:text-primary-yellow transition-colors">
-                      {participacao.nome}
-                    </h3>
-                    <p className="text-sm text-foreground-muted mt-0.5">
-                      {participacao.cargo}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                      <span className="inline-flex items-center gap-1.5 text-xs text-foreground-faint">
-                        <Calendar size={12} />
-                        {date}
-                      </span>
-                      <span className="text-xs text-foreground-secondary font-medium">
-                        {participacao.episodio}
-                      </span>
-                      {participacao.videoUrl && (
-                        <span className="inline-flex items-center gap-1 text-xs text-primary-yellow">
-                          <Film size={12} />
-                          Vídeo disponível
-                        </span>
-                      )}
-                    </div>
+                {/* Link overlay */}
+                {p.videoId && (
+                  <Link
+                    href={`/episodio/${p.videoId}`}
+                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-primary-yellow hover:bg-black/70 transition-all opacity-0 group-hover:opacity-100"
+                    title="Assistir episódio"
+                  >
+                    <ExternalLink size={14} />
+                  </Link>
+                )}
+              </div>
 
-                    {/* Video embed */}
-                    {participacao.videoUrl && (
-                      <div className="mt-3 rounded-xl overflow-hidden aspect-video max-w-md">
-                        <video
-                          src={participacao.videoUrl}
-                          controls
-                          preload="metadata"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Link to episode */}
-                  {participacao.videoId && (
-                    <Link
-                      href={`/episodio/${participacao.videoId}`}
-                      className="flex-shrink-0 w-9 h-9 rounded-lg bg-surface-hover flex items-center justify-center text-foreground-muted hover:text-primary-yellow hover:bg-primary-yellow/10 transition-colors"
-                      title="Assistir episódio"
-                    >
-                      <ExternalLink size={16} />
-                    </Link>
+              {/* Info */}
+              <div className="p-3 space-y-1">
+                <h3 className="font-heading font-semibold text-sm text-foreground group-hover:text-primary-yellow transition-colors truncate">
+                  {p.nome}
+                </h3>
+                {p.cargo && (
+                  <p className="text-xs text-foreground-muted truncate">{p.cargo}</p>
+                )}
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-foreground-faint">
+                  {p.episodio && <span className="truncate">{p.episodio}</span>}
+                  {p.data && (
+                    <span className="inline-flex items-center gap-1">
+                      <Calendar size={10} />
+                      {new Date(p.data + "T00:00:00").toLocaleDateString("pt-BR")}
+                    </span>
                   )}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
+      )}
+
+      {/* Without photo – simple list */}
+      {withoutPhoto.length > 0 && (
+        <>
+          {withPhoto.length > 0 && (
+            <div className="border-t border-surface-border pt-8 mb-6">
+              <h2 className="font-heading text-lg font-semibold text-foreground mb-4">
+                Outros participantes
+              </h2>
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {withoutPhoto.map((p) => (
+              <div
+                key={p.id}
+                className="group flex items-center gap-3 bg-surface-card border border-surface-border rounded-xl p-3 hover:border-primary-yellow/30 transition-all"
+              >
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-yellow/20 flex items-center justify-center">
+                  <Users size={16} className="text-primary-yellow" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate group-hover:text-primary-yellow transition-colors">
+                    {p.nome}
+                  </p>
+                  {p.cargo && (
+                    <p className="text-xs text-foreground-faint truncate">{p.cargo}</p>
+                  )}
+                  {p.episodio && (
+                    <p className="text-xs text-foreground-faint truncate">{p.episodio}</p>
+                  )}
+                </div>
+                {p.videoId && (
+                  <Link
+                    href={`/episodio/${p.videoId}`}
+                    className="flex-shrink-0 text-foreground-faint hover:text-primary-yellow transition-colors"
+                    title="Assistir episódio"
+                  >
+                    <ExternalLink size={14} />
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

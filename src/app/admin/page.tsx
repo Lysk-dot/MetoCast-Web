@@ -463,12 +463,11 @@ function ParticipacoesTab({ authHeader }: { authHeader: Record<string, string> }
                 />
               </div>
               <div>
-                <label className="block text-sm text-foreground-muted mb-1">Cargo *</label>
+                <label className="block text-sm text-foreground-muted mb-1">Cargo</label>
                 <input
                   type="text"
                   value={cargo}
                   onChange={(e) => setCargo(e.target.value)}
-                  required
                   maxLength={300}
                   placeholder="Ex: Professora — Universidade Metodista"
                   className="w-full px-3 py-2 bg-surface rounded-lg border border-surface-border text-foreground text-sm placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50"
@@ -478,24 +477,22 @@ function ParticipacoesTab({ authHeader }: { authHeader: Record<string, string> }
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-foreground-muted mb-1">Episódio *</label>
+                <label className="block text-sm text-foreground-muted mb-1">Episódio</label>
                 <input
                   type="text"
                   value={episodio}
                   onChange={(e) => setEpisodio(e.target.value)}
-                  required
                   maxLength={300}
                   placeholder="Ex: EP.09 — Desvendando a OAB"
                   className="w-full px-3 py-2 bg-surface rounded-lg border border-surface-border text-foreground text-sm placeholder-foreground-faint focus:outline-none focus:border-primary-yellow/50"
                 />
               </div>
               <div>
-                <label className="block text-sm text-foreground-muted mb-1">Data *</label>
+                <label className="block text-sm text-foreground-muted mb-1">Data</label>
                 <input
                   type="date"
                   value={data}
                   onChange={(e) => setData(e.target.value)}
-                  required
                   className="w-full px-3 py-2 bg-surface rounded-lg border border-surface-border text-foreground text-sm focus:outline-none focus:border-primary-yellow/50"
                 />
               </div>
@@ -636,13 +633,15 @@ function ParticipacoesTab({ authHeader }: { authHeader: Record<string, string> }
                 <span title="Tem vídeo"><Film size={12} className="text-foreground-faint" /></span>
               )}
             </div>
-            <p className="text-xs text-foreground-faint">{p.cargo}</p>
+            {p.cargo && <p className="text-xs text-foreground-faint">{p.cargo}</p>}
             <div className="flex items-center gap-3 text-xs text-foreground-faint">
-              <span className="flex items-center gap-1">
-                <Calendar size={10} />
-                {new Date(p.data + "T00:00:00").toLocaleDateString("pt-BR")}
-              </span>
-              <span>{p.episodio}</span>
+              {p.data && (
+                <span className="flex items-center gap-1">
+                  <Calendar size={10} />
+                  {new Date(p.data + "T00:00:00").toLocaleDateString("pt-BR")}
+                </span>
+              )}
+              {p.episodio && <span>{p.episodio}</span>}
             </div>
           </div>
 

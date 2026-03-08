@@ -55,10 +55,10 @@ model VideoView {
 model Participacao {
   id        Int      @id @default(autoincrement())
   nome      String   @db.VarChar(200)
-  cargo     String   @db.VarChar(300)
-  episodio  String   @db.VarChar(300)
+  cargo     String?  @db.VarChar(300)
+  episodio  String?  @db.VarChar(300)
   videoId   String?  @map("video_id") @db.VarChar(20)
-  data      String   @db.VarChar(10)
+  data      String?  @db.VarChar(10)
   fotoUrl   String?  @map("foto_url") @db.VarChar(1000)
   videoUrl  String?  @map("video_url") @db.VarChar(1000)
   createdAt DateTime @default(now()) @map("created_at")

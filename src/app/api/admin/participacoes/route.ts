@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
   if (!nome || nome.length > 200) {
     return NextResponse.json({ error: "Nome é obrigatório (máx. 200 caracteres)." }, { status: 400 });
   }
-  if (!cargo || cargo.length > 300) {
-    return NextResponse.json({ error: "Cargo é obrigatório (máx. 300 caracteres)." }, { status: 400 });
+  if (cargo && cargo.length > 300) {
+    return NextResponse.json({ error: "Cargo excede 300 caracteres." }, { status: 400 });
   }
-  if (!episodio || episodio.length > 300) {
-    return NextResponse.json({ error: "Episódio é obrigatório (máx. 300 caracteres)." }, { status: 400 });
+  if (episodio && episodio.length > 300) {
+    return NextResponse.json({ error: "Episódio excede 300 caracteres." }, { status: 400 });
   }
-  if (!data || !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
-    return NextResponse.json({ error: "Data é obrigatória (formato YYYY-MM-DD)." }, { status: 400 });
+  if (data && !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+    return NextResponse.json({ error: "Data inválida (formato YYYY-MM-DD)." }, { status: 400 });
   }
   if (videoId && !/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
     return NextResponse.json({ error: "ID de vídeo inválido." }, { status: 400 });
@@ -68,10 +68,10 @@ export async function POST(request: NextRequest) {
   const participacao = await prisma.participacao.create({
     data: {
       nome: nome.trim(),
-      cargo: cargo.trim(),
-      episodio: episodio.trim(),
+      cargo: cargo?.trim() || null,
+      episodio: episodio?.trim() || null,
       videoId: videoId?.trim() || null,
-      data,
+      data: data || null,
       fotoUrl: fotoUrl?.trim() || null,
       videoUrl: videoUrl?.trim() || null,
     },
@@ -110,14 +110,14 @@ export async function PUT(request: NextRequest) {
   if (!nome || nome.length > 200) {
     return NextResponse.json({ error: "Nome é obrigatório (máx. 200 caracteres)." }, { status: 400 });
   }
-  if (!cargo || cargo.length > 300) {
-    return NextResponse.json({ error: "Cargo é obrigatório (máx. 300 caracteres)." }, { status: 400 });
+  if (cargo && cargo.length > 300) {
+    return NextResponse.json({ error: "Cargo excede 300 caracteres." }, { status: 400 });
   }
-  if (!episodio || episodio.length > 300) {
-    return NextResponse.json({ error: "Episódio é obrigatório (máx. 300 caracteres)." }, { status: 400 });
+  if (episodio && episodio.length > 300) {
+    return NextResponse.json({ error: "Episódio excede 300 caracteres." }, { status: 400 });
   }
-  if (!data || !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
-    return NextResponse.json({ error: "Data é obrigatória (formato YYYY-MM-DD)." }, { status: 400 });
+  if (data && !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+    return NextResponse.json({ error: "Data inválida (formato YYYY-MM-DD)." }, { status: 400 });
   }
   if (videoId && !/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
     return NextResponse.json({ error: "ID de vídeo inválido." }, { status: 400 });
@@ -128,10 +128,10 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: {
         nome: nome.trim(),
-        cargo: cargo.trim(),
-        episodio: episodio.trim(),
+        cargo: cargo?.trim() || null,
+        episodio: episodio?.trim() || null,
         videoId: videoId?.trim() || null,
-        data,
+        data: data || null,
         fotoUrl: fotoUrl?.trim() || null,
         videoUrl: videoUrl?.trim() || null,
       },

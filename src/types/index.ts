@@ -50,10 +50,10 @@ export interface MetricsSummary {
 export interface Participacao {
   id: number;
   nome: string;
-  cargo: string;
-  episodio: string;
+  cargo: string | null;
+  episodio: string | null;
   videoId: string | null;
-  data: string;
+  data: string | null;
   fotoUrl: string | null;
   videoUrl: string | null;
   createdAt: string;
