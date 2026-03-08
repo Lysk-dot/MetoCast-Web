@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Music, Instagram, Play } from "lucide-react";
+import { Music, Instagram, Play, Youtube } from "lucide-react";
 import Logo from "./Logo";
 
 export default function Hero() {
@@ -41,6 +41,15 @@ export default function Hero() {
           >
             <Music size={18} />
             Ouvir no Spotify
+          </a>
+          <a
+            href="https://www.youtube.com/@MetoCast"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-full hover:brightness-110 transition-all"
+          >
+            <Youtube size={18} />
+            YouTube
           </a>
           <a
             href="https://www.instagram.com/meto_cast/"

@@ -4,27 +4,29 @@
 
 1. [Visão Geral](#visão-geral)
 2. [Arquitetura](#arquitetura)
-3. [Pré-requisitos](#pré-requisitos)
-4. [Deploy com Docker](#deploy-com-docker)
-5. [Cloudflare Tunnel](#cloudflare-tunnel)
-6. [Variáveis de Ambiente](#variáveis-de-ambiente)
-7. [Manutenção](#manutenção)
-8. [Desenvolvimento Local](#desenvolvimento-local)
-9. [Troubleshooting](#troubleshooting)
+3. [Servidor de Produção](#servidor-de-produção)
+4. [CI/CD — GitHub Actions](#cicd--github-actions)
+5. [Variáveis de Ambiente](#variáveis-de-ambiente)
+6. [Docker Compose](#docker-compose)
+7. [Cloudflare Tunnel](#cloudflare-tunnel)
+8. [Manutenção](#manutenção)
+9. [Desenvolvimento Local](#desenvolvimento-local)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Visão Geral
 
-O MetôCast roda em um servidor Linux com a seguinte stack:
+O MetôCast roda em um servidor Linux auto-hospedado com a seguinte stack:
 
-- **Next.js** — Frontend + API (tudo em um)
-- **PostgreSQL** — Banco de dados (comentários e sugestões)
-- **Nginx** — Reverse proxy com rate limiting e compressão
-- **Cloudflare Tunnel** — Exposição segura ao domínio público
-- **Docker Compose** — Orquestração dos containers
+- **Next.js 14** — Frontend + API (App Router, standalone mode)
+- **PostgreSQL 16** — Banco de dados (comentários e sugestões)
+- **Nginx** — Reverse proxy com rate limiting e compressão gzip
+- **Cloudflare Tunnel** — Exposição segura ao domínio público (systemd)
+- **Docker Compose** — Orquestração dos containers (db, app, nginx)
+- **GitHub Actions** — CI/CD automático (self-hosted runner)
 
-Episódios são automaticamente buscados do RSS do YouTube. Vídeos são entregues via embed do YouTube (zero carga no servidor).
+Episódios são automaticamente buscados do RSS do YouTube (canal `UCnFAxzMvp4ot-uElK_z1qSQ`). Cache de 10 minutos. Zero carga no servidor para vídeos.
 
 ---
 
@@ -34,185 +36,275 @@ Episódios são automaticamente buscados do RSS do YouTube. Vídeos são entregu
 Internet
    │
    ▼
-Cloudflare (CDN + DNS)
+Cloudflare (CDN + DNS + SSL)
    │
-   ▼ (Tunnel)
-┌─────────────────────────────────────────────┐
-│  Servidor Linux                              │
+   ▼ (Tunnel via systemd)
+┌──────────────────────────────────────────────┐
+│  Servidor: T110ii (Debian 12 Bookworm)       │
+│  Usuário: felipe                             │
 │                                              │
-│  ┌─────────────┐     ┌──────────────────┐   │
-│  │  cloudflared │────▶│     Nginx :80    │   │
-│  │  (tunnel)    │     │  reverse proxy   │   │
-│  └─────────────┘     └───────┬──────────┘   │
+│  ┌──────────────┐    ┌──────────────────┐    │
+│  │  cloudflared  │───▶│   Nginx :80      │    │
+│  │  (systemd)    │    │  (Docker)        │    │
+│  └──────────────┘    └───────┬──────────┘    │
 │                              │               │
 │                              ▼               │
 │                     ┌──────────────────┐     │
 │                     │  Next.js :3000   │     │
-│                     │  (app + API)     │     │
+│                     │  (Docker)        │     │
 │                     └───────┬──────────┘     │
 │                             │                │
 │                             ▼                │
 │                     ┌──────────────────┐     │
-│                     │  PostgreSQL :5432│     │
-│                     │  (comments, etc) │     │
+│                     │ PostgreSQL :5432  │     │
+│                     │  (Docker)        │     │
 │                     └──────────────────┘     │
 │                                              │
-│  Nenhuma porta exposta à internet            │
-└─────────────────────────────────────────────┘
+│  GitHub Actions Runner (systemd)             │
+│  ~/actions-runner/_work/MetoCast-Web/        │
+└──────────────────────────────────────────────┘
+```
+
+**Portas expostas:** Apenas porta 80 (Nginx). O Cloudflare Tunnel se conecta a `localhost:80`.
+
+---
+
+## Servidor de Produção
+
+### Informações do Servidor
+
+| Item | Valor |
+|------|-------|
+| **Hostname** | T110ii |
+| **SO** | Debian 12 (Bookworm) |
+| **Usuário** | felipe |
+| **Docker** | Instalado, felipe no grupo docker |
+| **Runner path** | `/home/felipe/actions-runner/` |
+| **Workspace** | `/home/felipe/actions-runner/_work/MetoCast-Web/MetoCast-Web/` |
+| **Env file** | `/home/felipe/.env.metocast` |
+| **Backups** | `/home/felipe/backup_metocast_db_*.sql` |
+
+### Serviços systemd (fora do Docker)
+
+| Serviço | Comando |
+|---------|---------|
+| **GitHub Runner** | `sudo systemctl status actions.runner.ByteLair.T110ii.service` |
+| **Cloudflare Tunnel** | `sudo systemctl status cloudflared` |
+
+### Containers Docker
+
+| Container | Imagem | Porta |
+|-----------|--------|-------|
+| `metocast-web-db-1` | postgres:16-alpine | 5432 (interna) |
+| `metocast-web-app-1` | metocast-web-app (build local) | 3000 (interna) |
+| `metocast-web-nginx-1` | nginx:alpine | 80 (exposta) |
+
+---
+
+## CI/CD — GitHub Actions
+
+### Fluxo Automático
+
+1. Push na branch `Stable` → dispara workflow
+2. Checkout do código
+3. Copia `.env` de `/home/felipe/.env.metocast`
+4. `docker compose down --remove-orphans`
+5. `docker compose build --no-cache app`
+6. `docker compose up -d`
+7. Aguarda 15s para serviços estabilizarem
+8. `prisma db push` (sincroniza schema do banco)
+9. Health check em `localhost:80`
+
+### Arquivo do Workflow
+
+`.github/workflows/deploy.yml` — Trigger: push em `Stable` ou `workflow_dispatch` (manual).
+
+### Runner Self-Hosted
+
+- **Instalado em:** `/home/felipe/actions-runner/`
+- **Serviço:** `actions.runner.ByteLair.T110ii.service`
+- **Roda como:** usuário `felipe`
+- **Auto-start:** Sim (systemd enabled)
+
+Para verificar status:
+```bash
+sudo systemctl status actions.runner.ByteLair.T110ii.service
+```
+
+Para reiniciar:
+```bash
+sudo systemctl restart actions.runner.ByteLair.T110ii.service
 ```
 
 ---
 
-## Pré-requisitos
+## Variáveis de Ambiente
 
-No servidor Linux:
-
-1. **Docker** e **Docker Compose** instalados
-2. **Git** para clonar o repositório
-3. Conta no **Cloudflare** com o domínio configurado
-
----
-
-## Deploy com Docker
-
-### 1. Clonar o repositório
-
-```bash
-git clone https://github.com/ByteLair/MetoCast-Web.git
-cd MetoCast-Web
-```
-
-### 2. Configurar variáveis de ambiente
-
-```bash
-cp .env.docker.example .env
-nano .env
-```
-
-Preencha:
+### Arquivo: `/home/felipe/.env.metocast`
 
 ```env
-DB_PASSWORD=uma_senha_forte_aqui
-SITE_URL=https://seu-dominio.com
-CLOUDFLARE_TUNNEL_TOKEN=seu_token_aqui
+DB_PASSWORD=metocast_2026
+SITE_URL=https://metocast.com
+DATABASE_URL=postgresql://metocast:metocast_2026@db:5432/metocast_db
 ```
 
-### 3. Subir todos os containers
+> **Nota:** Este arquivo é copiado para `.env` no diretório do projeto pelo workflow de deploy. O docker-compose.yml usa interpolação `${DB_PASSWORD}` e `${SITE_URL}`.
+
+### Como as variáveis são usadas
+
+| Variável | Usado por | Descrição |
+|----------|-----------|-----------|
+| `DB_PASSWORD` | docker-compose.yml → `POSTGRES_PASSWORD` e `DATABASE_URL` | Senha do PostgreSQL |
+| `SITE_URL` | docker-compose.yml → `NEXT_PUBLIC_SITE_URL` | URL pública do site |
+| `DATABASE_URL` | Prisma CLI (db push no workflow) | Connection string completa |
+
+### Variáveis injetadas nos containers (via docker-compose.yml)
+
+**Container `db`:**
+- `POSTGRES_USER=metocast`
+- `POSTGRES_PASSWORD=${DB_PASSWORD}`
+- `POSTGRES_DB=metocast_db`
+
+**Container `app`:**
+- `DATABASE_URL=postgresql://metocast:${DB_PASSWORD}@db:5432/metocast_db`
+- `YOUTUBE_CHANNEL_ID=UCnFAxzMvp4ot-uElK_z1qSQ`
+- `NEXT_PUBLIC_SITE_URL=${SITE_URL}`
+
+---
+
+## Docker Compose
+
+### Serviços
+
+**`db`** — PostgreSQL 16 Alpine
+- Volume persistente: `pgdata`
+- Healthcheck: `pg_isready -U metocast`
+
+**`app`** — Next.js (Dockerfile multi-stage)
+- Stage 1 (deps): `npm ci` + Prisma generate
+- Stage 2 (builder): `npm run build` (standalone output)
+- Stage 3 (runner): Node 20 Alpine + OpenSSL + sharp
+- Roda como usuário `nextjs` (não-root)
+- Depende de `db` healthy
+
+**`nginx`** — Nginx Alpine
+- Config em `nginx/nginx.conf`
+- Rate limiting: 10 req/s na API
+- Gzip habilitado
+- Cache de 1 ano para assets estáticos (`/_next/static/`)
+- Porta 80 exposta
+
+### Comandos úteis
 
 ```bash
-docker compose up -d --build
-```
+# Ir ao diretório do projeto
+cd /home/felipe/actions-runner/_work/MetoCast-Web/MetoCast-Web
 
-Isso inicia:
-- **db** — PostgreSQL
-- **app** — Next.js (build automático)
-- **nginx** — Reverse proxy
-- **tunnel** — Cloudflare Tunnel
-
-### 4. Criar as tabelas do banco
-
-Na primeira vez (ou após mudanças no schema):
-
-```bash
-docker compose exec app npx prisma db push
-```
-
-### 5. Verificar se está tudo rodando
-
-```bash
+# Ver status dos containers
 docker compose ps
-docker compose logs -f app
+
+# Ver logs
+docker compose logs app --tail 50
+docker compose logs nginx --tail 50
+docker compose logs db --tail 50
+
+# Reiniciar um serviço
+docker compose restart app
+
+# Rebuild e redeploy manual
+docker compose down --remove-orphans
+docker compose build --no-cache app
+docker compose up -d
 ```
 
 ---
 
 ## Cloudflare Tunnel
 
-### Criar o Tunnel
+O tunnel roda como **serviço systemd** (NÃO está no Docker Compose).
 
-1. Acesse [Cloudflare Zero Trust](https://one.dash.cloudflare.com/)
-2. Vá em **Network → Tunnels**
-3. Clique em **Create a tunnel**
-4. Escolha **Cloudflared** como conector
-5. Dê um nome (ex: `metocast`)
-6. Copie o **token** e coloque em `.env`
+### Configuração
 
-### Configurar a rota pública
+| Item | Valor |
+|------|-------|
+| **Tipo** | Token-based |
+| **Serviço** | `cloudflared.service` (systemd) |
+| **Destino** | `localhost:80` |
+| **Domínio** | `metocast.com` / `www.metocast.com` |
 
-No painel do tunnel, adicione:
+### Comandos
+
+```bash
+# Status
+sudo systemctl status cloudflared
+
+# Reiniciar
+sudo systemctl restart cloudflared
+
+# Logs
+sudo journalctl -u cloudflared -f
+```
+
+### Rota no Cloudflare Dashboard
 
 | Campo | Valor |
 |-------|-------|
-| **Public hostname** | `seu-dominio.com` |
-| **Service type** | HTTP |
-| **URL** | `nginx:80` |
-
-> O tunnel se conecta diretamente ao container Nginx via rede interna Docker. Nenhuma porta é exposta ao servidor.
-
-### DNS
-
-O Cloudflare cria automaticamente um registro CNAME para o domínio apontando para o tunnel. Verifique que o proxy (nuvem laranja) está ativado.
-
----
-
-## Variáveis de Ambiente
-
-| Variável | Descrição | Exemplo |
-|----------|-----------|---------|
-| `DB_PASSWORD` | Senha do PostgreSQL | `senha_forte_123` |
-| `SITE_URL` | URL pública do site | `https://metocast.com.br` |
-| `CLOUDFLARE_TUNNEL_TOKEN` | Token do tunnel | `eyJ...` |
+| Public hostname | `metocast.com` |
+| Service type | HTTP |
+| URL | `localhost:80` |
 
 ---
 
 ## Manutenção
 
-### Atualizar o site
+### Deploy (automático)
+
+Basta fazer push na branch `Stable`. O GitHub Actions cuida de tudo.
 
 ```bash
-cd MetoCast-Web
-git pull origin Stable
-docker compose up -d --build
+git push origin Stable
 ```
 
-### Ver logs
+### Backup do banco
 
 ```bash
-# Todos os serviços
-docker compose logs -f
-
-# Apenas a aplicação
-docker compose logs -f app
-
-# Apenas erros do Nginx
-docker compose logs -f nginx
-```
-
-### Backup do banco de dados
-
-```bash
-docker compose exec db pg_dump -U metocast metocast > backup_$(date +%Y%m%d).sql
+cd /home/felipe/actions-runner/_work/MetoCast-Web/MetoCast-Web
+docker compose exec -T db pg_dump -U metocast metocast_db > ~/backup_metocast_db_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 ### Restaurar backup
 
 ```bash
-cat backup_20260308.sql | docker compose exec -T db psql -U metocast metocast
+cd /home/felipe/actions-runner/_work/MetoCast-Web/MetoCast-Web
+docker compose exec -T db psql -U metocast metocast_db < ~/backup_metocast_db_XXXXXXXX.sql
 ```
 
-### Atualizar schema do banco
-
-Após alterar `prisma/schema.prisma`:
+### Sincronizar schema do banco (manualmente)
 
 ```bash
-docker compose exec app npx prisma db push
+cd /home/felipe/actions-runner/_work/MetoCast-Web/MetoCast-Web
+docker compose exec -T app node ./node_modules/prisma/build/index.js db push
 ```
 
-### Reiniciar serviço específico
+### Ver uso de disco dos volumes
 
 ```bash
-docker compose restart app
-docker compose restart nginx
+docker system df
+docker volume ls
+```
+
+### Limpar imagens antigas
+
+```bash
+docker image prune -f
+```
+
+### Atualizar imagens base (postgres, nginx)
+
+```bash
+cd /home/felipe/actions-runner/_work/MetoCast-Web/MetoCast-Web
+docker compose pull db nginx
+docker compose up -d
 ```
 
 ---
@@ -225,65 +317,77 @@ docker compose restart nginx
 # 1. Instalar dependências
 npm install
 
-# 2. Subir um PostgreSQL local (ou usar Docker só para o banco)
+# 2. Subir PostgreSQL local
 docker run -d --name metocast-db \
   -e POSTGRES_USER=metocast \
   -e POSTGRES_PASSWORD=metocast_password \
-  -e POSTGRES_DB=metocast \
+  -e POSTGRES_DB=metocast_db \
   -p 5432:5432 \
   postgres:16-alpine
 
-# 3. Configurar variáveis
-cp .env.example .env.local
+# 3. Criar .env.local
+echo 'DATABASE_URL="postgresql://metocast:metocast_password@localhost:5432/metocast_db"' > .env.local
 
 # 4. Criar tabelas
 npx prisma db push
 
-# 5. Rodar em desenvolvimento
+# 5. Rodar em dev
 npm run dev
 ```
 
-Acesse: [http://localhost:3000](http://localhost:3000)
+Acesse: http://localhost:3000
 
-### Com Docker (completo)
+### Com Docker (stack completa)
 
 ```bash
+echo 'DB_PASSWORD=metocast_password' > .env
+echo 'SITE_URL=http://localhost' >> .env
+echo 'DATABASE_URL=postgresql://metocast:metocast_password@db:5432/metocast_db' >> .env
 docker compose up -d --build
 ```
 
-Acesse: [http://localhost:8080](http://localhost:8080)
+Acesse: http://localhost:80
 
 ---
 
 ## Troubleshooting
 
-### Site não carrega
+### Site fora do ar (502 Bad Gateway)
 
-1. Verifique os containers: `docker compose ps`
-2. Veja os logs: `docker compose logs -f app`
-3. Confirme que o tunnel está conectado: `docker compose logs tunnel`
+1. Verificar containers: `docker compose ps`
+2. Se app não está rodando: `docker compose logs app --tail 50`
+3. Se nginx não está rodando: `docker compose logs nginx --tail 20`
+4. Reiniciar tudo: `docker compose down && docker compose up -d`
 
-### Erro de banco de dados
+### Erro de conexão ao banco (Prisma P1000)
 
-1. Verifique se o PostgreSQL está rodando: `docker compose ps db`
-2. Teste a conexão: `docker compose exec db psql -U metocast -d metocast -c "SELECT 1"`
-3. Se as tabelas não existem: `docker compose exec app npx prisma db push`
+1. Verificar se db está healthy: `docker compose ps`
+2. Testar conexão: `docker compose exec db psql -U metocast -d metocast_db -c "SELECT 1"`
+3. Se senha errada, resetar volume: `docker compose down && docker volume rm metocast-web_pgdata && docker compose up -d`
+
+### Imagens não otimizadas (erro sharp)
+
+O pacote `sharp` deve estar em `dependencies` no `package.json`. Verificar logs: `docker compose logs app | grep sharp`
 
 ### Episódios não aparecem
 
-1. O feed RSS do YouTube pode estar temporariamente indisponível
-2. Os episódios são cacheados por 10 minutos — aguarde e recarregue
-3. Verifique nos logs: `docker compose logs app | grep RSS`
+1. Feed RSS do YouTube pode estar temporariamente indisponível
+2. Cache de 10 minutos — aguardar e recarregar
+3. Verificar `YOUTUBE_CHANNEL_ID` no docker-compose.yml
+
+### Runner offline
+
+```bash
+sudo systemctl status actions.runner.ByteLair.T110ii.service
+sudo systemctl restart actions.runner.ByteLair.T110ii.service
+```
 
 ### Tunnel desconectado
 
-1. Veja os logs: `docker compose logs tunnel`
-2. Verifique o token em `.env`
-3. Reinicie: `docker compose restart tunnel`
-
-### Como adicionar mais episódios
-
-Não é necessário fazer nada. Basta publicar no YouTube e o site atualiza automaticamente em até 10 minutos.
+```bash
+sudo systemctl status cloudflared
+sudo systemctl restart cloudflared
+```
 
 ---
 
@@ -291,113 +395,41 @@ Não é necessário fazer nada. Basta publicar no YouTube e o site atualiza auto
 
 ```
 MetoCast-Web/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml             # CI/CD workflow
 ├── prisma/
-│   └── schema.prisma          # Schema do banco (Prisma)
+│   └── schema.prisma              # Schema do banco (Prisma)
 ├── public/
-│   └── images/                # Assets estáticos (logo, etc)
+│   └── images/                    # Assets estáticos (logo, etc)
 ├── src/
-│   ├── app/
-│   │   ├── layout.tsx         # Layout raiz (navbar + footer)
-│   │   ├── page.tsx           # / (landing page)
-│   │   ├── not-found.tsx      # 404
-│   │   ├── globals.css        # Estilos globais
-│   │   ├── episodios/
-│   │   │   └── page.tsx       # /episodios (lista paginada)
-│   │   ├── episodio/
-│   │   │   └── [videoId]/
-│   │   │       └── page.tsx   # /episodio/[videoId] (detalhe)
-│   │   ├── assistir/
-│   │   │   └── page.tsx       # /assistir (players)
-│   │   ├── sobre/
-│   │   │   └── page.tsx       # /sobre
-│   │   ├── comunidade/
-│   │   │   └── page.tsx       # /comunidade
-│   │   └── api/
-│   │       ├── comments/
-│   │       │   └── route.ts   # GET/POST comentários
-│   │       └── suggestions/
-│   │           ├── route.ts   # GET/POST sugestões
-│   │           └── [id]/
-│   │               └── vote/
-│   │                   └── route.ts  # POST voto
-│   ├── components/
-│   │   ├── Navbar.tsx
-│   │   ├── Footer.tsx
-│   │   ├── Hero.tsx
-│   │   ├── Logo.tsx
-│   │   ├── EpisodeCard.tsx
-│   │   ├── YouTubePlayer.tsx
-│   │   ├── Pagination.tsx
-│   │   ├── CommentSection.tsx
-│   │   ├── SuggestionForm.tsx
-│   │   └── SuggestionList.tsx
+│   ├── app/                       # Next.js App Router
+│   │   ├── layout.tsx             # Layout raiz (navbar + footer)
+│   │   ├── page.tsx               # / (landing page com episódios)
+│   │   ├── not-found.tsx          # 404
+│   │   ├── globals.css            # Estilos globais (Tailwind)
+│   │   ├── episodios/page.tsx     # /episodios (lista paginada)
+│   │   ├── episodio/[videoId]/page.tsx  # /episodio/:id (player + comentários)
+│   │   ├── assistir/page.tsx      # /assistir
+│   │   ├── sobre/page.tsx         # /sobre
+│   │   ├── comunidade/page.tsx    # /comunidade (sugestões + votação)
+│   │   └── api/                   # API Routes
+│   │       ├── comments/route.ts
+│   │       └── suggestions/route.ts
+│   ├── components/                # Componentes React (.tsx)
 │   ├── lib/
-│   │   ├── prisma.ts          # Singleton do Prisma Client
-│   │   └── youtube.ts         # Parser do RSS feed
-│   └── types/
-│       └── index.ts           # Tipagens TypeScript
+│   │   ├── prisma.ts              # Singleton do Prisma Client
+│   │   └── youtube.ts             # Parser do RSS feed do YouTube
+│   └── types/index.ts             # Tipagens TypeScript
 ├── nginx/
-│   └── nginx.conf             # Configuração Nginx
-├── docker-compose.yml
-├── Dockerfile
-├── .env.docker.example
-├── .env.example
-├── next.config.js
+│   └── nginx.conf                 # Config do Nginx (rate limit, gzip, proxy)
+├── docker-compose.yml             # Orquestração (db + app + nginx)
+├── Dockerfile                     # Multi-stage build do Next.js
+├── next.config.js                 # Config Next.js (standalone, pageExtensions)
 ├── tailwind.config.js
 ├── tsconfig.json
 └── package.json
 ```
-
-### Banco de dados vazio
-- Verifique se o start command está correto
-- Rode as migrations: `alembic upgrade head`
-- Verifique logs do Railway
-
----
-
-## 📝 Commits Importantes
-
-1. **876377c** - feat: configurar deploy GitHub Pages + API Railway
-2. **91786fc** - fix: ajustar base path para GitHub Pages
-3. **8dd531e** - docs: adicionar documentação completa de deploy
-4. **5e1c21b** - fix: corrigir caminhos das imagens para GitHub Pages
-5. **7b5cfad** - fix: corrigir múltiplos problemas de tela preta no login
-6. **67147ee** - fix: resolver tela preta no login adicionando estado de loading
-7. **8e5dd78** - fix: corrigir tela preta no login na segunda navegação
-8. **e99d216** - fix: usar navigate() no useEffect ao invés de Navigate component
-
----
-
-## 🔧 Correção de Bugs Recentes
-
-### Problema 1: Tela Preta no Login (1 de Fev, 2026)
-
-**Sintoma**: Ao acessar a página de login, a tela ficava completamente preta, sem nenhum conteúdo visível.
-
-**Causa Raiz**: 
-O componente `Login` tentava renderizar antes do `AuthContext` terminar a verificação inicial de autenticação, causando um estado de "limbo" onde:
-- O `loading` do `AuthContext` estava `true`
-- O componente `Login` não aguardava esse estado
-- O CSS do Tailwind não tinha tempo de carregar/aplicar
-- Não havia fallback visual durante o carregamento
-
-**Soluções Implementadas**:
-
-#### 1. Centralização do Loading no AuthProvider ([AuthContext.jsx](src/context/AuthContext.jsx))
-```javascript
-// Antes: children renderizava mesmo com loading=true
-return (
-  <AuthContext.Provider value={value}>
-    {children}
-  </AuthContext.Provider>
-);
-
-// Depois: loading renderiza tela própria com estilos inline
-if (loading) {
-  return (
-    <AuthContext.Provider value={value}>
-      <div className="min-h-screen flex items-center justify-center" 
-           style={{ backgroundColor: '#0D0D0F' }}>
         <div className="text-center">
           <div className="spinner mx-auto mb-4" 
                style={{ borderColor: '#FFC107', borderTopColor: 'transparent' }}>
