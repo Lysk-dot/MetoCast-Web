@@ -6,6 +6,11 @@ import MetricsTracker from "@/components/MetricsTracker";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  icons: {
+    icon: '/logo.svg',
+    shortcut: '/logo.svg',
+    apple: '/logo.svg',
+  },
   title: {
     default: "MetôCast — Podcast Metodista",
     template: "%s | MetôCast",
@@ -45,3 +50,4 @@ export default function RootLayout({
     </html>
   );
 }
+
