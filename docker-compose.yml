@@ -1,47 +1,19 @@
-# ============================
-# MetôCast - Docker Compose
-# ============================
-# Serviços: Next.js app + PostgreSQL + Nginx + Cloudflare Tunnel
-
 services:
-  # ---- PostgreSQL Database ----
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: metocast
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-metocast_password}
-      POSTGRES_DB: metocast_db
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U metocast"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - internal
-
-  # ---- Next.js Application ----
   app:
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://metocast:${DB_PASSWORD:-metocast_password}@db:5432/metocast_db
+      DATABASE_URL: ${DATABASE_URL}
       YOUTUBE_CHANNEL_ID: UCnFAxzMvp4ot-uElK_z1qSQ
       NEXT_PUBLIC_SITE_URL: ${SITE_URL:-https://metocast.example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     volumes:
       - uploads:/app/public/uploads
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - internal
 
-  # ---- Nginx Reverse Proxy ----
   nginx:
     image: nginx:alpine
     restart: unless-stopped
@@ -56,7 +28,6 @@ services:
       - internal
 
 volumes:
-  pgdata:
   uploads:
 
 networks:

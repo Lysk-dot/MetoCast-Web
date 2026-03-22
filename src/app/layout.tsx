@@ -7,9 +7,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   icons: {
-    icon: '/logo.svg',
-    shortcut: '/logo.svg',
-    apple: '/logo.svg',
+    icon: [
+      { url: '/favicon.ico?v=1' },
+      { url: '/logo.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico?v=1',
+    apple: '/favicon.ico?v=1',
   },
   title: {
     default: "MetôCast — Podcast Metodista",
