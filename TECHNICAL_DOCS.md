@@ -672,7 +672,7 @@ src="https://www.youtube.com/embed/{videoId}"
 - O diretório `public/uploads/` é montado como volume Docker (`uploads`)
 - Isso garante que uploads persistam entre rebuilds/redeploys
 - O Dockerfile cria o diretório com ownership `nextjs:nodejs`
-- O Nginx serve `/uploads/` com cache de 30 dias via proxy_pass para o Next.js
+- O Nginx serve `/uploads/` diretamente do volume com `alias /app/public/uploads/`, aplicando cache de 30 dias para esses arquivos estáticos
 
 ---
 
