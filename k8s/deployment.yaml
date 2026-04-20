@@ -4,19 +4,6 @@ metadata:
   name: metocast
 
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: metocast-secrets
-  namespace: metocast
-type: Opaque
-stringData:
-  DATABASE_URL: "postgresql://metocast_app:SENHA@10.10.10.30:5432/metocast_db"
-  ADMIN_PASSWORD: "SENHA_ADMIN"
-  NEXT_PUBLIC_SITE_URL: "https://metocast.com"
-  YOUTUBE_CHANNEL_ID: "UCnFAxzMvp4ot-uElK_z1qSQ"
-
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:

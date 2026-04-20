@@ -44,6 +44,13 @@ jobs:
           echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
           kubectl apply -f k8s/deployment.yaml
+          kubectl create secret generic metocast-secrets \
+            --from-literal=DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            --from-literal=ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
+            --from-literal=NEXT_PUBLIC_SITE_URL="https://metocast.com" \
+            --from-literal=YOUTUBE_CHANNEL_ID="UCnFAxzMvp4ot-uElK_z1qSQ" \
+            -n metocast \
+            --dry-run=client -o yaml | kubectl apply -f -
           kubectl create secret docker-registry ghcr-secret \
             --docker-server=ghcr.io \
             --docker-username="${{ github.actor }}" \
