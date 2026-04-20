@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: metocast
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: metocast-secrets
+  namespace: metocast
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://metocast_app:SENHA@10.10.10.30:5432/metocast_db"
+  ADMIN_PASSWORD: "SENHA_ADMIN"
+  NEXT_PUBLIC_SITE_URL: "https://metocast.com"
+  YOUTUBE_CHANNEL_ID: "UCnFAxzMvp4ot-uElK_z1qSQ"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metocast
+  namespace: metocast
+  labels:
+    app: metocast
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: metocast
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: metocast
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: metocast
+          image: ghcr.io/bytelair/metocast:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: metocast-secrets
+                  key: DATABASE_URL
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metocast-secrets
+                  key: ADMIN_PASSWORD
+            - name: NEXT_PUBLIC_SITE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: metocast-secrets
+                  key: NEXT_PUBLIC_SITE_URL
+            - name: YOUTUBE_CHANNEL_ID
+              valueFrom:
+                secretKeyRef:
+                  name: metocast-secrets
+                  key: YOUTUBE_CHANNEL_ID
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metocast
+  namespace: metocast
+spec:
+  selector:
+    app: metocast
+  ports:
+    - port: 80
+      targetPort: 3000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: metocast
+  namespace: metocast
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: metocast.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: metocast
+                port:
+                  number: 80
+    - host: www.metocast.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: metocast
+                port:
+                  number: 80
