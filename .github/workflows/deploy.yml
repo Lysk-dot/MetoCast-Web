@@ -67,7 +67,7 @@ jobs:
           mkdir -p ~/.kube
           echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
-          kubectl wait pod -n metocast -l app=metocast --for=condition=Ready --timeout=120s
+          kubectl wait pod -n metocast -l app=metocast --for=condition=Ready --timeout=180s
           POD=$(kubectl get pod -n metocast -l app=metocast --field-selector=status.phase=Running -o jsonpath="{.items[0].metadata.name}")
           kubectl exec -n metocast $POD -- node ./node_modules/prisma/build/index.js db push
 
