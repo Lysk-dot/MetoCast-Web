@@ -67,8 +67,10 @@
 | **GitHub Actions** | Self-hosted | CI/CD automático no push para `Stable` |
 | **lucide-react** | 0.460.0 | Biblioteca de ícones |
 | **fast-xml-parser** | 4.5.0 | Parser de XML (RSS do YouTube) |
+| **@aws-sdk/client-s3** | 3.600+ | Upload de arquivos para Ceph RadosGW (S3-compatível) |
 | **sharp** | 0.33.2 | Otimização de imagens do Next.js |
 | **Vitest** | 2.1.0 | Framework de testes |
+| **Ceph RadosGW** | 19.2.3 | Object storage S3-compatível (self-hosted, porta 7480) |
 
 ---
 
@@ -478,7 +480,7 @@ Função `checkAuth()` compara o header com `process.env.ADMIN_PASSWORD`. Retorn
 - Retorna 201 com o comentário criado
 
 #### GET `/api/suggestions`
-- Retorna top 50 sugestões ordenadas por `votes desc`
+- Retorna todas as sugestões ordenadas por `votes desc` (sem limite)
 
 #### POST `/api/suggestions`
 - Body: `{ author, title, description }`
@@ -534,9 +536,9 @@ Função `checkAuth()` compara o header com `process.env.ADMIN_PASSWORD`. Retorn
 #### POST `/api/admin/upload`
 - **Multipart FormData** com campo `file`
 - Tipos permitidos: JPEG, PNG, WebP, GIF (imagem, max 10MB) + MP4, WebM (vídeo, max 100MB)
-- Nome do arquivo: `crypto.randomBytes(16).toString("hex")` + extensão sanitizada
-- Salva em: `public/uploads/participacoes/{random_name}.{ext}`
-- Retorna: `{ url: "/uploads/participacoes/{filename}", type: "image"|"video" }`
+- Key no bucket: `participacoes/{crypto.randomBytes(16).hex}.{ext}` — extensão sanitizada
+- Faz upload para Ceph RadosGW via S3 (`PutObjectCommand`, `forcePathStyle: true`)
+- Retorna: `{ url: "{ENDPOINT_URL}/{BUCKET}/participacoes/{hash}.{ext}", type: "image"|"video" }`
 
 #### GET `/api/admin/metrics`
 - Retorna resumo completo:
@@ -657,22 +659,23 @@ src="https://www.youtube.com/embed/{videoId}"
 1. Admin abre a aba "Participações" no painel
 2. Formulário com campos de file input (foto ou vídeo)
 3. `handleUpload()` cria `FormData`, envia POST para `/api/admin/upload` com header `x-admin-password`
-4. API valida tipo MIME, tamanho, gera nome aleatório seguro
-5. Salva em `public/uploads/participacoes/{hash}.{ext}`
-6. Retorna URL relativa: `/uploads/participacoes/{hash}.{ext}`
-7. URL é salva no campo `fotoUrl` ou `videoUrl` da participação
+4. API valida tipo MIME e tamanho, gera key aleatória: `participacoes/{hex}.{ext}`
+5. Faz upload para Ceph RadosGW via `@aws-sdk/client-s3` (`PutObjectCommand`)
+6. Retorna URL pública: `http://{ENDPOINT_URL}/{BUCKET}/participacoes/{hash}.{ext}`
+7. URL é salva no campo `fotoUrl` ou `videoUrl` da participação no banco
 
 ### Segurança
-- Filenames são `crypto.randomBytes(16).toString("hex")` — previne path traversal
+- Keys são `participacoes/` + `crypto.randomBytes(16).toString("hex")` — previne path traversal
 - Extensão é sanitizada: apenas `[a-z0-9]`, max 5 chars
 - Tipos permitidos: JPEG, PNG, WebP, GIF (10MB) + MP4, WebM (100MB)
 - Header de autenticação obrigatório
 
-### Volume Docker
-- O diretório `public/uploads/` é montado como volume Docker (`uploads`)
-- Isso garante que uploads persistam entre rebuilds/redeploys
-- O Dockerfile cria o diretório com ownership `nextjs:nodejs`
-- O Nginx serve `/uploads/` diretamente do volume com `alias /app/public/uploads/`, aplicando cache de 30 dias para esses arquivos estáticos
+### Infraestrutura de Storage
+- **Ceph RadosGW** rodando no host Proxmox na porta 7480
+- Bucket `metocast-uploads` com política de leitura pública (GET sem autenticação)
+- S3 client configurado com `forcePathStyle: true` (necessário para RadosGW sem DNS virtual-hosted)
+- Arquivos persistem independentemente de restarts ou número de réplicas do pod
+- URL no banco aponta diretamente para o Ceph — o app não faz proxy das imagens
 
 ---
 
@@ -880,6 +883,10 @@ Arquivo `.env` na raiz (copiado de `/home/felipe/.env.metocast` no deploy):
 | `NEXT_PUBLIC_SITE_URL` | Não | URL pública do site (default: `https://metocast.example.com`) |
 | `ADMIN_PASSWORD` | Sim | Senha do painel admin. Sem default — **deve ser definida** |
 | `NODE_ENV` | Auto | `production` no Dockerfile |
+| `R2_ACCESS_KEY_ID` | Sim | Access key do usuário Ceph RadosGW (`metocast`) |
+| `R2_SECRET_ACCESS_KEY` | Sim | Secret key do usuário Ceph RadosGW |
+| `R2_BUCKET_NAME` | Sim | Nome do bucket no Ceph (`metocast-uploads`) |
+| `ENDPOINT_URL` | Sim | Endpoint do RadosGW (ex: `http://100.x.x.x:7480`) |
 
 ---
 
@@ -965,7 +972,9 @@ docker compose exec db psql -U metocast -d metocast_db
 ```
 
 ### Upload não funciona
-- Verificar se volume `uploads` está montado: `docker compose exec app ls -la /app/public/uploads/`
+- Verificar se as env vars `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` e `ENDPOINT_URL` estão nos secrets do K8s
+- Verificar se o RadosGW está rodando no Proxmox: `systemctl status ceph-radosgw@rgw.pve`
+- Verificar se a porta 7480 está acessível via Tailscale: `curl http://100.117.249.36:7480`
 - Verificar se `ADMIN_PASSWORD` está definido
 - Verificar `client_max_body_size` no nginx (deve ser 100m)
 
@@ -1052,4 +1061,4 @@ interface Participacao {
 
 ---
 
-> **Última atualização:** Março 2026
+> **Última atualização:** Maio 2026
