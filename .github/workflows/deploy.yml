@@ -49,6 +49,10 @@ jobs:
             --from-literal=ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
             --from-literal=NEXT_PUBLIC_SITE_URL="https://metocast.com" \
             --from-literal=YOUTUBE_CHANNEL_ID="UCnFAxzMvp4ot-uElK_z1qSQ" \
+            --from-literal=R2_ACCESS_KEY_ID="${{ secrets.R2_ACCESS_KEY_ID }}" \
+            --from-literal=R2_SECRET_ACCESS_KEY="${{ secrets.R2_SECRET_ACCESS_KEY }}" \
+            --from-literal=R2_BUCKET_NAME="${{ secrets.R2_BUCKET_NAME }}" \
+            --from-literal=ENDPOINT_URL="${{ secrets.ENDPOINT_URL }}" \
             -n metocast \
             --dry-run=client -o yaml | kubectl apply -f -
           kubectl create secret docker-registry ghcr-secret \

@@ -54,6 +54,26 @@ spec:
                 secretKeyRef:
                   name: metocast-secrets
                   key: YOUTUBE_CHANNEL_ID
+            - name: R2_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: metocast-secrets
+                  key: R2_ACCESS_KEY_ID
+            - name: R2_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: metocast-secrets
+                  key: R2_SECRET_ACCESS_KEY
+            - name: R2_BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: metocast-secrets
+                  key: R2_BUCKET_NAME
+            - name: ENDPOINT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: metocast-secrets
+                  key: ENDPOINT_URL
           resources:
             requests:
               cpu: 100m
@@ -63,16 +83,18 @@ spec:
               memory: 512Mi
           livenessProbe:
             httpGet:
-              path: /
+              path: /api/suggestions
               port: 3000
             initialDelaySeconds: 30
             periodSeconds: 15
+            timeoutSeconds: 10
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/suggestions
               port: 3000
             initialDelaySeconds: 15
             periodSeconds: 10
+            timeoutSeconds: 10
 
 ---
 apiVersion: v1

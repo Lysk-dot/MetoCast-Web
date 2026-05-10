@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -8,6 +7,16 @@ const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm"];
 const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES];
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
+
+const s3 = new S3Client({
+  region: "us-east-1",
+  endpoint: process.env.ENDPOINT_URL,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  },
+  forcePathStyle: true,
+});
 
 function checkAuth(request: NextRequest): boolean {
   const password = request.headers.get("x-admin-password");
@@ -44,20 +53,20 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Generate a secure random filename to prevent path traversal
   const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
   const safeExt = ext.slice(0, 5);
-  const randomName = crypto.randomBytes(16).toString("hex");
-  const filename = `${randomName}.${safeExt}`;
+  const key = `participacoes/${crypto.randomBytes(16).toString("hex")}.${safeExt}`;
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "participacoes");
-  await mkdir(uploadDir, { recursive: true });
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+      Body: Buffer.from(await file.arrayBuffer()),
+      ContentType: file.type,
+    })
+  );
 
-  const filePath = path.join(uploadDir, filename);
-  const bytes = await file.arrayBuffer();
-  await writeFile(filePath, Buffer.from(bytes));
-
-  const url = `/uploads/participacoes/${filename}`;
+  const url = `${process.env.ENDPOINT_URL}/${process.env.R2_BUCKET_NAME}/${key}`;
 
   return NextResponse.json({ url, type: isVideo ? "video" : "image" }, { status: 201 });
 }
