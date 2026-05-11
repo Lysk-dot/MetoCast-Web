@@ -8,7 +8,7 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
-RUN npm ci || npm install
+RUN npm install
 
 # Stage 2: Build the application
 FROM node:20-alpine AS builder
