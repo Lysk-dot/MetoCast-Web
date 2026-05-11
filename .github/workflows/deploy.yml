@@ -63,7 +63,7 @@ jobs:
             -n metocast \
             --dry-run=client -o yaml | kubectl apply -f -
           kubectl rollout restart deployment/metocast -n metocast
-          kubectl rollout status deployment/metocast -n metocast --timeout=180s
+          kubectl rollout status deployment/metocast -n metocast --timeout=300s
 
       - name: Prisma DB Push
         env:
