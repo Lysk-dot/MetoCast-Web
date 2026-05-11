@@ -72,7 +72,8 @@ jobs:
           mkdir -p ~/.kube
           echo "$KUBECONFIG_DATA" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
-          POD=$(kubectl get pod -n metocast -l app=metocast --field-selector=status.phase=Running -o jsonpath="{.items[0].metadata.name}")
+          POD=$(kubectl get pod -n metocast -l app=metocast -o json | \
+            python3 -c "import sys,json; pods=[p['metadata']['name'] for p in json.load(sys.stdin)['items'] if p['status']['phase']=='Running' and 'deletionTimestamp' not in p['metadata']]; print(pods[0])")
           kubectl exec -n metocast $POD -- node ./node_modules/prisma/build/index.js db push
 
       - name: Cleanup kubeconfig
